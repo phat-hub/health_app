@@ -7,6 +7,7 @@ import 'manager/theme_manager.dart';
 import 'theme/app_theme.dart';
 import 'ui/login_screen.dart';
 import 'manager/heart_rate_manager.dart';
+import 'manager/heart_rate_camera_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthManager()),
         ChangeNotifierProvider(create: (_) => ThemeManager()),
         ChangeNotifierProvider(create: (_) => HeartRateManager()),
+        ChangeNotifierProvider(create: (_) => HeartRateCameraManager()),
       ],
       child: Consumer<ThemeManager>(
         builder: (context, themeManager, _) {

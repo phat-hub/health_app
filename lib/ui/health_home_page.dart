@@ -6,6 +6,7 @@ import '../../ui/login_screen.dart';
 import '../../manager/theme_manager.dart';
 import '../manager/heart_rate_manager.dart';
 import 'heart_rate_history_screen.dart';
+import 'heart_rate_camera_screen.dart';
 
 class HealthHomePage extends StatefulWidget {
   const HealthHomePage({super.key});
@@ -218,7 +219,13 @@ class _HealthHomePageState extends State<HealthHomePage> {
                       right: 0,
                       bottom: 0,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const HeartRateCameraScreen()),
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: theme.colorScheme.primary,
