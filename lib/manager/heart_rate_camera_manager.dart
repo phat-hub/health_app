@@ -9,6 +9,8 @@ class HeartRateCameraManager extends ChangeNotifier {
   int progress = 0;
   bool fingerOnCamera = false;
 
+  final int totalSeconds = 20; // 🔹 đồng bộ với service
+
   Future<void> startMeasurement() async {
     bpm = null;
     progress = 0;
@@ -16,16 +18,14 @@ class HeartRateCameraManager extends ChangeNotifier {
     fingerOnCamera = false;
     notifyListeners();
 
-    // Reset dữ liệu đo trong service
     await _service.resetMeasurementData();
-
     await _service.initializeCamera();
     await _service.turnOnFlash();
 
     final stream = _service.measureBPM((hasFinger) {
       fingerOnCamera = hasFinger;
       if (!hasFinger) {
-        progress = 0; // Reset thanh tiến trình nếu mất tay
+        progress = 0; // Reset khi mất tay
       }
       notifyListeners();
     });
@@ -42,11 +42,11 @@ class HeartRateCameraManager extends ChangeNotifier {
   Future<void> _updateProgressWhileMeasuring() async {
     progress = 0;
     int seconds = 0;
-    while (isMeasuring && seconds < 10) {
+    while (isMeasuring && seconds < totalSeconds) {
       await Future.delayed(const Duration(seconds: 1));
       if (fingerOnCamera) {
         seconds++;
-        progress = ((seconds / 10) * 100).toInt();
+        progress = ((seconds / totalSeconds) * 100).toInt();
       } else {
         seconds = 0;
         progress = 0;

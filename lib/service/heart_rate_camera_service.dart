@@ -1,14 +1,16 @@
 import 'package:camera/camera.dart';
 import 'dart:async';
+import 'dart:math' as math;
 
 class HeartRateCameraService {
   CameraController? _cameraController;
   bool _isMeasuring = false;
-  final int _sampleSeconds = 10;
 
-  final _brightnessData = <double>[];
-  final double _brightnessThreshold = 80;
-  final double _redThreshold = 150;
+  final int _sampleSeconds = 20; // 🔹 Đo 20 giây thay vì 10 giây
+  final _redData = <double>[];
+
+  final double _brightnessThreshold = 100; // Ngưỡng phát hiện tối ưu hơn
+  final double _redThreshold = 140;
 
   Future<void> initializeCamera() async {
     final cameras = await availableCameras();
@@ -61,38 +63,82 @@ class HeartRateCameraService {
     return avgY < _brightnessThreshold && avgV > _redThreshold;
   }
 
-  int _calculateBPM(List<double> data) {
-    if (data.isEmpty) return 0;
-    List<double> smooth = [];
-    for (int i = 1; i < data.length - 1; i++) {
-      smooth.add((data[i - 1] + data[i] + data[i + 1]) / 3);
-    }
-    int peaks = 0;
-    for (int i = 1; i < smooth.length - 1; i++) {
-      if (smooth[i] > smooth[i - 1] && smooth[i] > smooth[i + 1]) {
-        peaks++;
+  double _extractAverageRed(CameraImage image) {
+    final yBuffer = image.planes[0].bytes;
+    final uBuffer = image.planes[1].bytes;
+    final vBuffer = image.planes[2].bytes;
+
+    int width = image.width;
+    int height = image.height;
+    int uvRowStride = image.planes[1].bytesPerRow;
+    int uvPixelStride = image.planes[1].bytesPerPixel ?? 2;
+
+    double totalRed = 0;
+    int count = 0;
+
+    for (int y = 0; y < height; y += 4) {
+      for (int x = 0; x < width; x += 4) {
+        int uvIndex = (y ~/ 2) * uvRowStride + (x ~/ 2) * uvPixelStride;
+        int yIndex = y * image.planes[0].bytesPerRow + x;
+
+        int Y = yBuffer[yIndex];
+        int U = uBuffer[uvIndex];
+        int V = vBuffer[uvIndex];
+
+        // Công thức chuyển YUV -> Red
+        double R = (Y + 1.402 * (V - 128)).clamp(0, 255).toDouble();
+        totalRed += R;
+        count++;
       }
     }
-    return ((peaks / _sampleSeconds) * 60).round();
+
+    return count > 0 ? totalRed / count : 0;
+  }
+
+  List<double> _smoothSignal(List<double> data, int window) {
+    List<double> smooth = [];
+    for (int i = 0; i < data.length; i++) {
+      double sum = 0;
+      int count = 0;
+      for (int j = i - window; j <= i + window; j++) {
+        if (j >= 0 && j < data.length) {
+          sum += data[j];
+          count++;
+        }
+      }
+      smooth.add(sum / count);
+    }
+    return smooth;
+  }
+
+  int _calculateBPM(List<double> data) {
+    if (data.isEmpty) return 0;
+
+    final smooth = _smoothSignal(data, 5);
+    final peaks = <int>[];
+
+    for (int i = 1; i < smooth.length - 1; i++) {
+      if (smooth[i] > smooth[i - 1] && smooth[i] > smooth[i + 1]) {
+        if (peaks.isEmpty || (i - peaks.last) > 3) {
+          // Loại đỉnh quá gần
+          peaks.add(i);
+        }
+      }
+    }
+
+    return ((peaks.length / _sampleSeconds) * 60).round();
   }
 
   Future<void> resetMeasurementData() async {
-    _brightnessData.clear();
+    _redData.clear();
     _isMeasuring = false;
   }
 
-  /// Khi bắt đầu đo → gọi hàm này
   Stream<int> measureBPM(Function(bool) onFingerDetected) async* {
-    // Reset dữ liệu mỗi lần bắt đầu đo
-    _brightnessData.clear();
-
+    _redData.clear();
     _isMeasuring = true;
-    bool fingerDetected = false;
-    int stableFrames = 0;
-    int noFingerFrames = 0;
 
     final completer = Completer<int>();
-
     await turnOnFlash();
 
     int validSeconds = 0;
@@ -105,30 +151,22 @@ class HeartRateCameraService {
       onFingerDetected(hasFinger);
 
       if (!hasFinger) {
-        validSeconds = 0; // Reset nếu mất tay
-        _brightnessData.clear();
+        validSeconds = 0;
+        _redData.clear();
         return;
       }
 
-      // Lấy độ sáng
-      final yBytes = image.planes[0].bytes;
-      double avgY = 0;
-      for (int i = 0; i < yBytes.length; i += 100) {
-        avgY += yBytes[i];
-      }
-      avgY /= (yBytes.length / 100);
-      _brightnessData.add(avgY);
+      final redValue = _extractAverageRed(image);
+      _redData.add(redValue);
 
-      // Tăng thời gian hợp lệ
       if (DateTime.now().second != lastSecond) {
         lastSecond = DateTime.now().second;
         validSeconds++;
       }
 
-      // Nếu đã đủ 10 giây hợp lệ
       if (validSeconds >= _sampleSeconds) {
         _cameraController?.stopImageStream();
-        int bpm = _calculateBPM(_brightnessData);
+        int bpm = _calculateBPM(_redData);
         turnOffFlash();
         completer.complete(bpm);
         _isMeasuring = false;
@@ -142,6 +180,6 @@ class HeartRateCameraService {
   void stopMeasurement() async {
     _isMeasuring = false;
     await _cameraController?.stopImageStream();
-    await turnOffFlash(); // 🔹 Tắt flash khi dừng
+    await turnOffFlash();
   }
 }

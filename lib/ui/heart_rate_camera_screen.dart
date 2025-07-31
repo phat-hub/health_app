@@ -14,7 +14,6 @@ class HeartRateCameraScreen extends StatelessWidget {
         builder: (context, m, _) {
           return WillPopScope(
             onWillPop: () async {
-              // 🔹 Khi nhấn nút quay lại → dừng đo + tắt flash
               m.stopMeasurement();
               return true;
             },
@@ -50,7 +49,10 @@ class HeartRateCameraScreen extends StatelessWidget {
       children: [
         Lottie.asset('assets/animations/heart-beat.json', width: 180),
         const SizedBox(height: 20),
-        const Text("Đặt ngón tay lên camera & flash"),
+        const Text(
+          "Đặt ngón tay che kín camera & flash\nGiữ yên trong quá trình đo",
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 30),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
@@ -70,7 +72,10 @@ class HeartRateCameraScreen extends StatelessWidget {
         if (!m.fingerOnCamera) ...[
           const Icon(Icons.touch_app, size: 80, color: Colors.orange),
           const SizedBox(height: 12),
-          const Text("Hãy đặt ngón tay che kín camera & flash"),
+          const Text(
+            "Hãy đặt ngón tay che kín camera & flash",
+            textAlign: TextAlign.center,
+          ),
         ] else ...[
           Lottie.asset('assets/animations/heart-beat.json', width: 180),
           const SizedBox(height: 12),
@@ -87,7 +92,7 @@ class HeartRateCameraScreen extends StatelessWidget {
         const SizedBox(height: 10),
         Text(
           m.fingerOnCamera
-              ? "Tiến trình: ${m.progress}%"
+              ? "Tiến trình: ${m.progress}% (${(m.progress / 100 * m.totalSeconds).round()}/${m.totalSeconds} giây)"
               : "Chưa phát hiện ngón tay",
         ),
       ],
@@ -97,6 +102,7 @@ class HeartRateCameraScreen extends StatelessWidget {
   Widget _buildAfterMeasure(BuildContext context, HeartRateCameraManager m) {
     String status = "Bình thường";
     Color color = Colors.green;
+
     if (m.bpm! < 60) {
       status = "Thấp";
       color = Colors.orange;
