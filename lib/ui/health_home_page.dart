@@ -1,18 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../manager/auth_manager.dart';
-import '../ui/login_screen.dart';
-import '../manager/theme_manager.dart';
+import '../../manager/auth_manager.dart';
+import '../../ui/login_screen.dart';
+import '../../manager/theme_manager.dart';
+import '../manager/heart_rate_manager.dart';
+import 'heart_rate_history_screen.dart';
 
-class HealthHomePage extends StatelessWidget {
+class HealthHomePage extends StatefulWidget {
   const HealthHomePage({super.key});
+
+  @override
+  State<HealthHomePage> createState() => _HealthHomePageState();
+}
+
+class _HealthHomePageState extends State<HealthHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<HeartRateManager>().loadLatestHeartRate();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final manager = Provider.of<HeartRateManager>(context);
 
     return Scaffold(
       body: SafeArea(
@@ -167,7 +182,11 @@ class HealthHomePage extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '78 bpm',
+                              manager.isLoading
+                                  ? "Đang tải..."
+                                  : (manager.latestHeartRate != null
+                                      ? "${manager.latestHeartRate} bpm"
+                                      : "Không có dữ liệu"),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -181,7 +200,13 @@ class HealthHomePage extends StatelessWidget {
                       right: 0,
                       top: 0,
                       child: TextButton.icon(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const HeartRateHistoryScreen()),
+                          );
+                        },
                         style:
                             TextButton.styleFrom(foregroundColor: Colors.white),
                         icon: const Icon(Icons.history, size: 18),

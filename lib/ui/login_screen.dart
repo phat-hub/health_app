@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../manager/auth_manager.dart';
-import '../health_home_page.dart';
+import 'health_home_page.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});

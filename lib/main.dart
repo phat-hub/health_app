@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'manager/auth_manager.dart';
 import 'manager/theme_manager.dart';
 import 'theme/app_theme.dart';
 import 'ui/login_screen.dart';
+import 'manager/heart_rate_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthManager()),
         ChangeNotifierProvider(create: (_) => ThemeManager()),
+        ChangeNotifierProvider(create: (_) => HeartRateManager()),
       ],
       child: Consumer<ThemeManager>(
         builder: (context, themeManager, _) {

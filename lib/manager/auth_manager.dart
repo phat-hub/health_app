@@ -12,6 +12,7 @@ class AuthManager extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get userName => _user?.displayName; // Lấy tên người dùng
   String? get photoURL => _user?.photoURL;
+  String? get userId => _user?.uid;
 
   void setLoading(bool value) {
     _isLoading = value;
