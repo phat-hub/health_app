@@ -16,30 +16,40 @@ class HeartRateCameraManager extends ChangeNotifier {
     fingerOnCamera = false;
     notifyListeners();
 
+    // Reset dữ liệu đo trong service
+    await _service.resetMeasurementData();
+
     await _service.initializeCamera();
-    await _service.startFlash();
+    await _service.turnOnFlash();
 
     final stream = _service.measureBPM((hasFinger) {
       fingerOnCamera = hasFinger;
       if (!hasFinger) {
-        progress = 0; // reset tiến độ
+        progress = 0; // Reset thanh tiến trình nếu mất tay
       }
       notifyListeners();
     });
 
-    stream.listen((value) {
-      bpm = value;
-      notifyListeners();
-    }, onDone: () {
-      stopMeasurement();
-    });
+    _updateProgressWhileMeasuring();
 
-    for (int i = 0; i < 10; i++) {
+    stream.listen((value) {
+      bpm = value > 0 ? value : null;
+      isMeasuring = false;
+      notifyListeners();
+    });
+  }
+
+  Future<void> _updateProgressWhileMeasuring() async {
+    progress = 0;
+    int seconds = 0;
+    while (isMeasuring && seconds < 10) {
       await Future.delayed(const Duration(seconds: 1));
       if (fingerOnCamera) {
-        progress = ((i + 1) / 10 * 100).toInt();
+        seconds++;
+        progress = ((seconds / 10) * 100).toInt();
       } else {
-        progress = 0; // reset nếu mất ngón tay
+        seconds = 0;
+        progress = 0;
       }
       notifyListeners();
     }
@@ -47,7 +57,7 @@ class HeartRateCameraManager extends ChangeNotifier {
 
   void stopMeasurement() {
     isMeasuring = false;
-    _service.stopFlash();
+    _service.stopMeasurement();
     notifyListeners();
   }
 

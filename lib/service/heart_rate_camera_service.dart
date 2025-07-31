@@ -1,127 +1,147 @@
 import 'package:camera/camera.dart';
-import 'package:torch_light/torch_light.dart';
+import 'dart:async';
 
 class HeartRateCameraService {
   CameraController? _cameraController;
   bool _isMeasuring = false;
   final int _sampleSeconds = 10;
 
-  final _redIntensities = <double>[];
-  final double _fingerThreshold =
-      80; // Ngưỡng phát hiện ngón tay (thấp hơn là ngón tay che kín)
+  final _brightnessData = <double>[];
+  final double _brightnessThreshold = 80;
+  final double _redThreshold = 150;
 
   Future<void> initializeCamera() async {
     final cameras = await availableCameras();
+    final backCamera =
+        cameras.firstWhere((c) => c.lensDirection == CameraLensDirection.back);
+
     _cameraController = CameraController(
-      cameras.firstWhere((c) => c.lensDirection == CameraLensDirection.back),
+      backCamera,
       ResolutionPreset.low,
       enableAudio: false,
-      imageFormatGroup: ImageFormatGroup.yuv420, // đọc kênh sáng
+      imageFormatGroup: ImageFormatGroup.yuv420,
     );
+
     await _cameraController!.initialize();
   }
 
-  Future<void> startFlash() async {
-    try {
-      await TorchLight.enableTorch();
-    } catch (_) {}
+  Future<void> turnOnFlash() async {
+    if (_cameraController != null && _cameraController!.value.isInitialized) {
+      await _cameraController!.setFlashMode(FlashMode.torch);
+    }
   }
 
-  Future<void> stopFlash() async {
-    try {
-      await TorchLight.disableTorch();
-    } catch (_) {}
+  Future<void> turnOffFlash() async {
+    if (_cameraController != null && _cameraController!.value.isInitialized) {
+      await _cameraController!.setFlashMode(FlashMode.off);
+    }
   }
 
   Future<void> dispose() async {
     await _cameraController?.dispose();
-    await stopFlash();
+    _cameraController = null;
   }
 
-  /// Kiểm tra xem ngón tay đã che kín camera chưa
   bool _isFingerOn(CameraImage image) {
-    final avg = _calculateBrightness(image);
-    return avg < _fingerThreshold;
-  }
+    final yBytes = image.planes[0].bytes;
+    final vBytes = image.planes.length > 2 ? image.planes[2].bytes : [];
 
-  /// Tính độ sáng trung bình từ kênh Y
-  double _calculateBrightness(CameraImage image) {
-    final bytes = image.planes[0].bytes;
-    double sum = 0;
-    for (int i = 0; i < bytes.length; i += 100) {
-      sum += bytes[i];
+    double avgY = 0, avgV = 0;
+    for (int i = 0; i < yBytes.length; i += 100) {
+      avgY += yBytes[i];
     }
-    return sum / (bytes.length / 100);
+    if (vBytes.isNotEmpty) {
+      for (int i = 0; i < vBytes.length; i += 100) {
+        avgV += vBytes[i];
+      }
+    }
+    avgY /= (yBytes.length / 100);
+    avgV = vBytes.isNotEmpty ? avgV / (vBytes.length / 100) : 0;
+
+    return avgY < _brightnessThreshold && avgV > _redThreshold;
   }
 
-  /// Tính BPM
   int _calculateBPM(List<double> data) {
     if (data.isEmpty) return 0;
-
     List<double> smooth = [];
     for (int i = 1; i < data.length - 1; i++) {
       smooth.add((data[i - 1] + data[i] + data[i + 1]) / 3);
     }
-
-    int peakCount = 0;
+    int peaks = 0;
     for (int i = 1; i < smooth.length - 1; i++) {
       if (smooth[i] > smooth[i - 1] && smooth[i] > smooth[i + 1]) {
-        peakCount++;
+        peaks++;
       }
     }
-
-    double seconds = _sampleSeconds.toDouble();
-    return ((peakCount / seconds) * 60).round();
+    return ((peaks / _sampleSeconds) * 60).round();
   }
 
-  /// Đo BPM nhưng yêu cầu luôn che kín camera
-  Stream<int> measureBPM(Function(bool) onFingerDetected) async* {
-    _isMeasuring = true;
-    _redIntensities.clear();
+  Future<void> resetMeasurementData() async {
+    _brightnessData.clear();
+    _isMeasuring = false;
+  }
 
+  /// Khi bắt đầu đo → gọi hàm này
+  Stream<int> measureBPM(Function(bool) onFingerDetected) async* {
+    // Reset dữ liệu mỗi lần bắt đầu đo
+    _brightnessData.clear();
+
+    _isMeasuring = true;
     bool fingerDetected = false;
     int stableFrames = 0;
+    int noFingerFrames = 0;
+
+    final completer = Completer<int>();
+
+    await turnOnFlash();
+
+    int validSeconds = 0;
+    int lastSecond = DateTime.now().second;
 
     await _cameraController?.startImageStream((CameraImage image) {
       if (!_isMeasuring) return;
 
-      bool hasFinger = _isFingerOn(image);
+      final hasFinger = _isFingerOn(image);
       onFingerDetected(hasFinger);
 
       if (!hasFinger) {
-        // Nếu mất ngón tay → reset dữ liệu
-        fingerDetected = false;
-        stableFrames = 0;
-        _redIntensities.clear();
+        validSeconds = 0; // Reset nếu mất tay
+        _brightnessData.clear();
         return;
       }
 
-      if (!fingerDetected) {
-        stableFrames++;
-        if (stableFrames > 10) {
-          fingerDetected = true; // Đã phát hiện ổn định ngón tay
-        }
-        return;
+      // Lấy độ sáng
+      final yBytes = image.planes[0].bytes;
+      double avgY = 0;
+      for (int i = 0; i < yBytes.length; i += 100) {
+        avgY += yBytes[i];
+      }
+      avgY /= (yBytes.length / 100);
+      _brightnessData.add(avgY);
+
+      // Tăng thời gian hợp lệ
+      if (DateTime.now().second != lastSecond) {
+        lastSecond = DateTime.now().second;
+        validSeconds++;
       }
 
-      final avgBrightness = _calculateBrightness(image);
-      _redIntensities.add(avgBrightness);
+      // Nếu đã đủ 10 giây hợp lệ
+      if (validSeconds >= _sampleSeconds) {
+        _cameraController?.stopImageStream();
+        int bpm = _calculateBPM(_brightnessData);
+        turnOffFlash();
+        completer.complete(bpm);
+        _isMeasuring = false;
+      }
     });
 
-    await Future.delayed(Duration(seconds: _sampleSeconds));
-
-    await _cameraController?.stopImageStream();
-
-    if (_redIntensities.isEmpty) {
-      yield 0;
-    } else {
-      yield _calculateBPM(_redIntensities);
-    }
-
-    _isMeasuring = false;
+    final result = await completer.future;
+    yield result;
   }
 
-  void stopMeasurement() {
+  void stopMeasurement() async {
     _isMeasuring = false;
+    await _cameraController?.stopImageStream();
+    await turnOffFlash(); // 🔹 Tắt flash khi dừng
   }
 }
