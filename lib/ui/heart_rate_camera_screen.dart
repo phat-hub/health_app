@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
 import '../manager/heart_rate_camera_manager.dart';
+import '../manager/auth_manager.dart';
 
 class HeartRateCameraScreen extends StatelessWidget {
   const HeartRateCameraScreen({super.key});
@@ -59,7 +60,11 @@ class HeartRateCameraScreen extends StatelessWidget {
             backgroundColor: const Color(0xFF1E88E5),
             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
           ),
-          onPressed: () => m.startMeasurement(),
+          onPressed: () {
+            final userId =
+                context.read<AuthManager>().userId; // lấy userId đăng nhập
+            m.startMeasurement(context, userId: userId);
+          },
           child: const Text("Bắt đầu đo"),
         ),
       ],
@@ -123,7 +128,10 @@ class HeartRateCameraScreen extends StatelessWidget {
             backgroundColor: const Color(0xFF1E88E5),
             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
           ),
-          onPressed: () => m.startMeasurement(),
+          onPressed: () {
+            final userId = context.read<AuthManager>().userId;
+            m.startMeasurement(context, userId: userId);
+          },
           child: const Text("Đo lại"),
         ),
       ],

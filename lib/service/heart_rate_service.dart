@@ -87,6 +87,53 @@ class HeartRateService {
         .map((doc) => HeartRateRecord.fromMap(doc.data()))
         .toList();
   }
+
+  Future<void> saveHeartRateToHealthConnect(int bpm) async {
+    await _health.configure();
+
+    final types = [HealthDataType.HEART_RATE];
+    final permissions = [HealthDataAccess.WRITE];
+
+    bool authorized = await _health.requestAuthorization(
+      types,
+      permissions: permissions,
+    );
+    if (!authorized) return;
+
+    final now = DateTime.now();
+    await _health.writeHealthData(
+      value: bpm.toDouble(),
+      unit: HealthDataUnit.BEATS_PER_MINUTE, // đơn vị BPM
+      type: HealthDataType.HEART_RATE,
+      startTime: now.subtract(const Duration(seconds: 20)),
+      endTime: now,
+    );
+  }
+
+  Future<void> saveLatestHeartRateToFirebase(String userId, int bpm) async {
+    final docRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('heart_rate_history');
+
+    // Kiểm tra bản ghi gần nhất
+    final latestDoc =
+        await docRef.orderBy('date', descending: true).limit(1).get();
+    if (latestDoc.docs.isNotEmpty) {
+      final latest = HeartRateRecord.fromMap(latestDoc.docs.first.data());
+      // Nếu dữ liệu không thay đổi trong vòng 1 phút → không ghi
+      if ((bpm - latest.bpm).abs() < 1 &&
+          DateTime.now().difference(latest.date).inMinutes < 1) {
+        return;
+      }
+    }
+
+    // Lưu bản ghi mới
+    await docRef.doc(DateTime.now().toIso8601String()).set({
+      'date': DateTime.now().toIso8601String(),
+      'bpm': bpm,
+    });
+  }
 }
 
 /// Hàm xử lý tìm nhịp tim mới nhất (chạy trong isolate)

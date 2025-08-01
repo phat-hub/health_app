@@ -9,6 +9,8 @@ class HeartRateManager extends ChangeNotifier {
   bool isLoading = false;
   List<HeartRateRecord> history = [];
 
+  HeartRateService get service => _service;
+
   Future<void> loadLatestHeartRate() async {
     isLoading = true;
     notifyListeners();
@@ -31,9 +33,18 @@ class HeartRateManager extends ChangeNotifier {
     final result = await _service.fetchHeartRateHistory(start: start, end: end);
     history = result;
 
-    // Đồng bộ Firebase nếu có userId
     if (userId != null) {
-      await _service.saveHistoryToFirebase(userId, history);
+      // Lấy lịch sử hiện tại trên Firebase
+      final firebaseHistory = await _service.getHistoryFromFirebase(userId);
+
+      // Nếu có dữ liệu mới → mới ghi
+      final newRecords = history.where((h) {
+        return !firebaseHistory.any((f) => f.date == h.date && f.bpm == h.bpm);
+      }).toList();
+
+      if (newRecords.isNotEmpty) {
+        await _service.saveHistoryToFirebase(userId, newRecords);
+      }
     }
 
     isLoading = false;
