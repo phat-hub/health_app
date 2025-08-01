@@ -39,7 +39,8 @@ class HeartRateManager extends ChangeNotifier {
 
       // Nếu có dữ liệu mới → mới ghi
       final newRecords = history.where((h) {
-        return !firebaseHistory.any((f) => f.date == h.date && f.bpm == h.bpm);
+        return !firebaseHistory.any((f) =>
+            (f.date.difference(h.date).inSeconds).abs() < 30 && f.bpm == h.bpm);
       }).toList();
 
       if (newRecords.isNotEmpty) {

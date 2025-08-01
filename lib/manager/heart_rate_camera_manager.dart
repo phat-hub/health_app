@@ -46,11 +46,12 @@ class HeartRateCameraManager extends ChangeNotifier {
 
         // ✅ Lưu vào Firebase + cập nhật local
         final hrManager = Provider.of<HeartRateManager>(context, listen: false);
-        hrManager.latestHeartRate = bpm;
         hrManager.history.insert(0, record); // thêm vào đầu
         await hrManager.service
             .saveLatestHeartRateToFirebase(userId, bpm!); // lưu vào Firestore
         await hrManager.service.saveHeartRateToHealthConnect(bpm!);
+        hrManager.latestHeartRate =
+            await hrManager.service.fetchLatestHeartRate();
         hrManager.notifyListeners();
       }
     });

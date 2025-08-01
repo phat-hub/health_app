@@ -32,269 +32,270 @@ class _HealthHomePageState extends State<HealthHomePage> {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Tiêu đề + menu người dùng
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            // Vuốt xuống sẽ tải lại nhịp tim mới nhất
+            await context.read<HeartRateManager>().loadLatestHeartRate();
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Tiêu đề + menu người dùng
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Theo dõi",
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      Consumer<AuthManager>(
+                        builder: (context, authManager, _) {
+                          final displayName =
+                              authManager.userName ?? 'Người dùng';
+                          final photoUrl = authManager.photoURL;
+
+                          return PopupMenuButton<int>(
+                            offset: const Offset(0, 48),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            color: theme.colorScheme.surface,
+                            elevation: 4,
+                            onSelected: (value) async {
+                              if (value == 1) {
+                                await Provider.of<AuthManager>(context,
+                                        listen: false)
+                                    .signOut();
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const LoginScreen()),
+                                );
+                              } else if (value == 2) {
+                                Provider.of<ThemeManager>(context,
+                                        listen: false)
+                                    .toggleTheme();
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem<int>(
+                                value: 2,
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      isDark
+                                          ? Icons.light_mode
+                                          : Icons.dark_mode,
+                                      color: theme.colorScheme.secondary,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      isDark ? 'Chế độ sáng' : 'Chế độ tối',
+                                      style:
+                                          theme.textTheme.bodyMedium?.copyWith(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuDivider(),
+                              PopupMenuItem<int>(
+                                value: 1,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.logout,
+                                        color: theme.colorScheme.primary),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'Đăng xuất',
+                                      style:
+                                          theme.textTheme.bodyMedium?.copyWith(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 18,
+                                  backgroundImage: photoUrl != null
+                                      ? NetworkImage(photoUrl)
+                                      : null,
+                                  backgroundColor: Colors.grey[300],
+                                  child: photoUrl == null
+                                      ? const Icon(Icons.person, size: 18)
+                                      : null,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  displayName,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                                const Icon(Icons.arrow_drop_down),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Card Nhịp tim
+                  Container(
+                    height: 120,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isDark
+                            ? [
+                                theme.colorScheme.primary.withOpacity(0.4),
+                                theme.colorScheme.secondary.withOpacity(0.4)
+                              ]
+                            : [
+                                const Color(0xFFB3E5FC),
+                                const Color(0xFF81D4FA)
+                              ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Stack(
+                      children: [
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 80,
+                              height: 80,
+                              child: Lottie.asset(
+                                  'assets/animations/heart-beat.json'),
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Nhịp tim',
+                                  style: theme.textTheme.bodySmall
+                                      ?.copyWith(color: Colors.white70),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  manager.isLoading
+                                      ? "Đang tải..."
+                                      : (manager.latestHeartRate != null
+                                          ? "${manager.latestHeartRate} bpm"
+                                          : "Không có dữ liệu"),
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: TextButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const HeartRateHistoryScreen()),
+                              );
+                            },
+                            style: TextButton.styleFrom(
+                                foregroundColor: Colors.white),
+                            icon: const Icon(Icons.history, size: 18),
+                            label: const Text("Lịch sử",
+                                style: TextStyle(fontSize: 14)),
+                          ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const HeartRateCameraScreen()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: theme.colorScheme.primary,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
+                            child: const Text('Đo ngay'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
                   Text(
-                    "Theo dõi",
-                    style: theme.textTheme.titleLarge?.copyWith(
+                    "Nhật ký sức khỏe",
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: theme.colorScheme.primary,
                     ),
                   ),
-                  Consumer<AuthManager>(
-                    builder: (context, authManager, _) {
-                      final displayName = authManager.userName ?? 'Người dùng';
-                      final photoUrl = authManager.photoURL;
 
-                      return PopupMenuButton<int>(
-                        offset: const Offset(0, 48),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        color: theme.colorScheme.surface,
-                        elevation: 4,
-                        onSelected: (value) async {
-                          if (value == 1) {
-                            await Provider.of<AuthManager>(context,
-                                    listen: false)
-                                .signOut();
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const LoginScreen()),
-                            );
-                          } else if (value == 2) {
-                            Provider.of<ThemeManager>(context, listen: false)
-                                .toggleTheme();
-                          }
-                        },
-                        itemBuilder: (context) => [
-                          PopupMenuItem<int>(
-                            value: 2,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  isDark ? Icons.light_mode : Icons.dark_mode,
-                                  color: theme.colorScheme.secondary,
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  isDark ? 'Chế độ sáng' : 'Chế độ tối',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: theme.colorScheme.primary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const PopupMenuDivider(),
-                          PopupMenuItem<int>(
-                            value: 1,
-                            child: Row(
-                              children: [
-                                Icon(Icons.logout,
-                                    color: theme.colorScheme.primary),
-                                const SizedBox(width: 12),
-                                Text(
-                                  'Đăng xuất',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: theme.colorScheme.primary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 18,
-                              backgroundImage: photoUrl != null
-                                  ? NetworkImage(photoUrl)
-                                  : null,
-                              backgroundColor: Colors.grey[300],
-                              child: photoUrl == null
-                                  ? const Icon(Icons.person, size: 18)
-                                  : null,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              displayName,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            const Icon(Icons.arrow_drop_down),
-                          ],
-                        ),
-                      );
-                    },
+                  const SizedBox(height: 16),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1.0,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      _buildHealthCard(context, 'Huyết áp',
+                          'assets/images/blood_pressure.png', () {}),
+                      _buildHealthCard(context, 'Đường huyết',
+                          'assets/images/glucose.png', () {}),
+                      _buildHealthCard(
+                          context, 'BMI', 'assets/images/bmi.png', () {}),
+                      _buildHealthCard(context, 'Uống nước',
+                          'assets/images/water.png', () {}),
+                      _buildHealthCard(context, 'Bác sĩ AI',
+                          'assets/images/doctor_ai.png', () {}),
+                      _buildHealthCard(context, 'Máy quét thực phẩm',
+                          'assets/images/scanner.png', () {}),
+                      _buildHealthCard(context, 'Bộ đếm bước',
+                          'assets/images/steps.png', () {}),
+                      _buildHealthCard(context, 'Giấc ngủ',
+                          'assets/images/sleep.png', () {}),
+                    ],
                   ),
                 ],
               ),
-
-              const SizedBox(height: 20),
-
-              // Card Nhịp tim
-              Container(
-                height: 120,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isDark
-                        ? [
-                            theme.colorScheme.primary.withOpacity(0.4),
-                            theme.colorScheme.secondary.withOpacity(0.4)
-                          ]
-                        : [const Color(0xFFB3E5FC), const Color(0xFF81D4FA)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Stack(
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 80,
-                          height: 80,
-                          child:
-                              Lottie.asset('assets/animations/heart-beat.json'),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Nhịp tim',
-                              style: theme.textTheme.bodySmall
-                                  ?.copyWith(color: Colors.white70),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              manager.isLoading
-                                  ? "Đang tải..."
-                                  : (manager.latestHeartRate != null
-                                      ? "${manager.latestHeartRate} bpm"
-                                      : "Không có dữ liệu"),
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: TextButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const HeartRateHistoryScreen()),
-                          );
-                        },
-                        style:
-                            TextButton.styleFrom(foregroundColor: Colors.white),
-                        icon: const Icon(Icons.history, size: 18),
-                        label: const Text("Lịch sử",
-                            style: TextStyle(fontSize: 14)),
-                      ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const HeartRateCameraScreen()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: theme.colorScheme.primary,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20)),
-                        ),
-                        child: const Text('Đo ngay'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-              Text(
-                "Nhật ký sức khỏe",
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1.0,
-                  children: [
-                    _buildHealthCard(
-                        context, 'Huyết áp', 'assets/images/blood_pressure.png',
-                        () {
-                      // TODO: Navigate to Blood Pressure Screen
-                    }),
-                    _buildHealthCard(
-                        context, 'Đường huyết', 'assets/images/glucose.png',
-                        () {
-                      // TODO: Navigate to Glucose Screen
-                    }),
-                    _buildHealthCard(context, 'BMI', 'assets/images/bmi.png',
-                        () {
-                      // TODO: Navigate to BMI Screen
-                    }),
-                    _buildHealthCard(
-                        context, 'Uống nước', 'assets/images/water.png', () {
-                      // TODO: Navigate to Water Tracker Screen
-                    }),
-                    _buildHealthCard(
-                        context, 'Bác sĩ AI', 'assets/images/doctor_ai.png',
-                        () {
-                      // TODO: Navigate to AI Doctor Screen
-                    }),
-                    _buildHealthCard(context, 'Máy quét thực phẩm',
-                        'assets/images/scanner.png', () {
-                      // TODO: Navigate to Food Scanner Screen
-                    }),
-                    _buildHealthCard(
-                        context, 'Bộ đếm bước', 'assets/images/steps.png', () {
-                      // TODO: Navigate to Step Counter Screen
-                    }),
-                    _buildHealthCard(
-                        context, 'Giấc ngủ', 'assets/images/sleep.png', () {
-                      // TODO: Navigate to Sleep Tracker Screen
-                    }),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
