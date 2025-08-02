@@ -135,6 +135,23 @@ class HeartRateService {
       'bpm': bpm,
     });
   }
+
+  Future<void> deleteOldHeartRateData(String userId) async {
+    final todayMidnight =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    final sevenDaysAgo = todayMidnight.subtract(const Duration(days: 7));
+
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('heart_rate_history')
+        .where('date', isLessThan: sevenDaysAgo.toIso8601String())
+        .get();
+
+    for (var doc in snapshot.docs) {
+      await doc.reference.delete();
+    }
+  }
 }
 
 /// Hàm xử lý tìm nhịp tim mới nhất (chạy trong isolate)

@@ -24,29 +24,45 @@ class HeartRateManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Lấy lịch sử từ Health Connect
-  Future<void> loadHistory(DateTime start, DateTime end,
-      {String? userId}) async {
+  Future<void> loadHistoryWithAutoRange(String userId) async {
     isLoading = true;
     notifyListeners();
 
-    final result = await _service.fetchHeartRateHistory(start: start, end: end);
-    history = result;
+    // Kiểm tra đã có dữ liệu Firebase chưa
+    final hasData = await _hasFirebaseData(userId);
 
-    if (userId != null) {
-      // Lấy lịch sử hiện tại trên Firebase
-      final firebaseHistory = await _service.getHistoryFromFirebase(userId);
+    DateTime start;
+    final now = DateTime.now();
+    final todayMidnight = DateTime(now.year, now.month, now.day);
 
-      // Nếu có dữ liệu mới → mới ghi
-      final newRecords = history.where((h) {
-        return !firebaseHistory.any((f) =>
-            (f.date.difference(h.date).inSeconds).abs() < 30 && f.bpm == h.bpm);
-      }).toList();
-
-      if (newRecords.isNotEmpty) {
-        await _service.saveHistoryToFirebase(userId, newRecords);
-      }
+    if (hasData) {
+      // Lần sau → chỉ lấy từ 00:00 hôm nay
+      start = DateTime(now.year, now.month, now.day);
+    } else {
+      // Lần đầu → lấy 7 ngày gần nhất
+      start = todayMidnight.subtract(const Duration(days: 7));
     }
+
+    // Lấy dữ liệu từ Health Connect
+    final result = await _service.fetchHeartRateHistory(start: start, end: now);
+
+    // Lịch sử hiện có trong Firebase
+    final firebaseHistory = await _service.getHistoryFromFirebase(userId);
+
+    // Chỉ giữ lại bản ghi mới chưa có trong Firebase
+    final newRecords = result.where((h) {
+      return !firebaseHistory.any((f) =>
+          (f.date.difference(h.date).inSeconds).abs() < 30 && f.bpm == h.bpm);
+    }).toList();
+
+    // Lưu nếu có dữ liệu mới
+    if (newRecords.isNotEmpty) {
+      await _service.saveHistoryToFirebase(userId, newRecords);
+    }
+
+    // Cập nhật state
+    history = [...firebaseHistory, ...newRecords]
+      ..sort((a, b) => b.date.compareTo(a.date));
 
     isLoading = false;
     notifyListeners();
@@ -71,5 +87,15 @@ class HeartRateManager extends ChangeNotifier {
             r.date.month == date.month &&
             r.date.day == date.day)
         .toList();
+  }
+
+  Future<bool> _hasFirebaseData(String userId) async {
+    final history = await _service.getHistoryFromFirebase(userId);
+    return history.isNotEmpty;
+  }
+
+  /// Xóa dữ liệu cũ hơn 7 ngày trên Firebase
+  Future<void> deleteOldHistory(String userId) async {
+    await _service.deleteOldHeartRateData(userId);
   }
 }

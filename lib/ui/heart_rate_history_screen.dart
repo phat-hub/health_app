@@ -18,25 +18,13 @@ class _HeartRateHistoryScreenState extends State<HeartRateHistoryScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadHistory();
-    });
-  }
-
-  Future<void> _loadHistory() async {
-    final authManager = context.read<AuthManager>();
-    final userId = authManager.userId;
-
-    // Lấy 7 ngày gần nhất từ Health Connect và đồng bộ Firebase
-    final now = DateTime.now();
-    final past = now.subtract(const Duration(days: 7));
-
-    if (userId != null) {
-      await context
+      context
           .read<HeartRateManager>()
-          .loadHistory(past, now, userId: userId);
-    } else {
-      await context.read<HeartRateManager>().loadHistory(past, now);
-    }
+          .loadHistoryWithAutoRange(context.read<AuthManager>().userId!);
+      context
+          .read<HeartRateManager>()
+          .deleteOldHistory(context.read<AuthManager>().userId!);
+    });
   }
 
   String getStatusLabel(int bpm) {
@@ -77,7 +65,7 @@ class _HeartRateHistoryScreenState extends State<HeartRateHistoryScreen> {
                         context: context,
                         initialDate: selectedDate,
                         firstDate:
-                            DateTime.now().subtract(const Duration(days: 30)),
+                            DateTime.now().subtract(const Duration(days: 7)),
                         lastDate: DateTime.now(),
                       );
                       if (picked != null) {
