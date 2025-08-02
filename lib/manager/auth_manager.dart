@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../service/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import '../screen.dart';
 
 class AuthManager extends ChangeNotifier {
   final AuthService _authService = AuthService();

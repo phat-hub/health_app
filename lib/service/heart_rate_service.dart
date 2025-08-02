@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../model/heart_rate_record.dart';
+
+import '../screen.dart';
 
 class HeartRateService {
   final Health _health = Health();

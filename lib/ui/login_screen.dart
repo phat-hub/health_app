@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../manager/auth_manager.dart';
-import 'health_home_page.dart';
+import '../screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -11,10 +10,7 @@ class LoginScreen extends StatelessWidget {
   void _navigateIfLoggedIn(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HealthHomePage()),
-      );
+      Navigator.pushReplacementNamed(context, '/home');
     }
   }
 

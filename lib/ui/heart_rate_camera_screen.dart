@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
-import '../manager/heart_rate_camera_manager.dart';
-import '../manager/auth_manager.dart';
+
+import '../screen.dart';
 
 class HeartRateCameraScreen extends StatelessWidget {
   const HeartRateCameraScreen({super.key});

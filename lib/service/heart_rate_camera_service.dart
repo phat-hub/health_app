@@ -1,6 +1,5 @@
 import 'package:camera/camera.dart';
 import 'dart:async';
-import 'dart:math' as math;
 
 class HeartRateCameraService {
   CameraController? _cameraController;

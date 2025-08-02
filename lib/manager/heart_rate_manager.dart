@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../service/heart_rate_service.dart';
-import '../model/heart_rate_record.dart';
+
+import '../screen.dart';
 
 class HeartRateManager extends ChangeNotifier {
   final HeartRateService _service = HeartRateService();

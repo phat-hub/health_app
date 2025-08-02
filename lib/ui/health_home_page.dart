@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import '../../manager/auth_manager.dart';
-import '../../ui/login_screen.dart';
-import '../../manager/theme_manager.dart';
-import '../manager/heart_rate_manager.dart';
-import 'heart_rate_history_screen.dart';
-import 'heart_rate_camera_screen.dart';
+
+import '../screen.dart';
 
 class HealthHomePage extends StatefulWidget {
   const HealthHomePage({super.key});
@@ -72,11 +68,8 @@ class _HealthHomePageState extends State<HealthHomePage> {
                                 await Provider.of<AuthManager>(context,
                                         listen: false)
                                     .signOut();
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => const LoginScreen()),
-                                );
+                                Navigator.pushReplacementNamed(
+                                    context, '/login');
                               } else if (value == 2) {
                                 Provider.of<ThemeManager>(context,
                                         listen: false)
@@ -218,12 +211,7 @@ class _HealthHomePageState extends State<HealthHomePage> {
                           top: 0,
                           child: TextButton.icon(
                             onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        const HeartRateHistoryScreen()),
-                              );
+                              Navigator.pushNamed(context, '/heartRateHistory');
                             },
                             style: TextButton.styleFrom(
                                 foregroundColor: Colors.white),
@@ -237,12 +225,7 @@ class _HealthHomePageState extends State<HealthHomePage> {
                           bottom: 0,
                           child: ElevatedButton(
                             onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        const HeartRateCameraScreen()),
-                              );
+                              Navigator.pushNamed(context, '/heartRateCamera');
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,

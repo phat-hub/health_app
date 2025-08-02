@@ -2,12 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
-import 'manager/auth_manager.dart';
-import 'manager/theme_manager.dart';
-import 'theme/app_theme.dart';
-import 'ui/login_screen.dart';
-import 'manager/heart_rate_manager.dart';
-import 'manager/heart_rate_camera_manager.dart';
+import 'screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +30,13 @@ class MyApp extends StatelessWidget {
             theme: lightTheme,
             darkTheme: darkTheme,
             themeMode: themeManager.themeMode,
-            home: const LoginScreen(),
+            initialRoute: '/login',
+            routes: {
+              '/login': (context) => const LoginScreen(),
+              '/home': (context) => const HealthHomePage(),
+              '/heartRateHistory': (context) => const HeartRateHistoryScreen(),
+              '/heartRateCamera': (context) => const HeartRateCameraScreen(),
+            },
           );
         },
       ),
