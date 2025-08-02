@@ -17,6 +17,12 @@ class _HealthHomePageState extends State<HealthHomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HeartRateManager>().loadLatestHeartRate();
+      context
+          .read<HeartRateManager>()
+          .loadHistoryWithAutoRange(context.read<AuthManager>().userId!);
+      context
+          .read<HeartRateManager>()
+          .deleteOldHistory(context.read<AuthManager>().userId!);
     });
   }
 
@@ -30,8 +36,11 @@ class _HealthHomePageState extends State<HealthHomePage> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            // Vuốt xuống sẽ tải lại nhịp tim mới nhất
+            final userId = context.read<AuthManager>().userId!;
             await context.read<HeartRateManager>().loadLatestHeartRate();
+            await context
+                .read<HeartRateManager>()
+                .loadHistoryWithAutoRange(userId);
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),

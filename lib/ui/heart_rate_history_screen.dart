@@ -17,14 +17,6 @@ class _HeartRateHistoryScreenState extends State<HeartRateHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context
-          .read<HeartRateManager>()
-          .loadHistoryWithAutoRange(context.read<AuthManager>().userId!);
-      context
-          .read<HeartRateManager>()
-          .deleteOldHistory(context.read<AuthManager>().userId!);
-    });
   }
 
   String getStatusLabel(int bpm) {

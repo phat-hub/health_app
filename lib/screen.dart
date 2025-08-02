@@ -14,4 +14,4 @@ export 'ui/heart_rate_history_screen.dart';
 export 'ui/heart_rate_camera_screen.dart';
 export 'ui/health_home_page.dart';
 
-export 'theme/app_theme.dart';
+export 'shared/app_theme.dart';
