@@ -15,14 +15,9 @@ class _HealthHomePageState extends State<HealthHomePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<HeartRateManager>().loadLatestHeartRate();
-      context
-          .read<HeartRateManager>()
-          .loadHistoryWithAutoRange(context.read<AuthManager>().userId!);
-      context
-          .read<HeartRateManager>()
-          .deleteOldHistory(context.read<AuthManager>().userId!);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<HeartRateManager>().loadLatestHeartRate();
+      await context.read<HeartRateManager>().loadHistoryWithAutoRange();
     });
   }
 
@@ -36,11 +31,8 @@ class _HealthHomePageState extends State<HealthHomePage> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            final userId = context.read<AuthManager>().userId!;
             await context.read<HeartRateManager>().loadLatestHeartRate();
-            await context
-                .read<HeartRateManager>()
-                .loadHistoryWithAutoRange(userId);
+            await context.read<HeartRateManager>().loadHistoryWithAutoRange();
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -205,7 +197,7 @@ class _HealthHomePageState extends State<HealthHomePage> {
                                       ? "Đang tải..."
                                       : (manager.latestHeartRate != null
                                           ? "${manager.latestHeartRate} bpm"
-                                          : "Không có dữ liệu"),
+                                          : "Chưa có"),
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -279,8 +271,11 @@ class _HealthHomePageState extends State<HealthHomePage> {
                           'assets/images/doctor_ai.png', () {}),
                       _buildHealthCard(context, 'Máy quét thực phẩm',
                           'assets/images/scanner.png', () {}),
-                      _buildHealthCard(context, 'Bộ đếm bước',
-                          'assets/images/steps.png', () {}),
+                      _buildHealthCard(
+                          context, 'Bộ đếm bước', 'assets/images/steps.png',
+                          () {
+                        Navigator.pushNamed(context, '/step');
+                      }),
                       _buildHealthCard(context, 'Giấc ngủ',
                           'assets/images/sleep.png', () {}),
                     ],

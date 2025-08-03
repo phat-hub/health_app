@@ -14,7 +14,7 @@ class HeartRateCameraManager extends ChangeNotifier {
   final int totalSeconds = 20;
   DateTime? _fingerStartTime; // 🔹 Thời điểm bắt đầu có ngón tay
 
-  Future<void> startMeasurement(BuildContext context, {String? userId}) async {
+  Future<void> startMeasurement(BuildContext context) async {
     bpm = null;
     progress = 0;
     isMeasuring = true;
@@ -47,12 +47,11 @@ class HeartRateCameraManager extends ChangeNotifier {
       isMeasuring = false;
       notifyListeners();
 
-      if (bpm != null && userId != null) {
+      if (bpm != null) {
         final record = HeartRateRecord(date: DateTime.now(), bpm: bpm!);
 
         final hrManager = Provider.of<HeartRateManager>(context, listen: false);
         hrManager.history.insert(0, record);
-        await hrManager.service.saveLatestHeartRateToFirebase(userId, bpm!);
         await hrManager.service.saveHeartRateToHealthConnect(bpm!);
         hrManager.latestHeartRate =
             await hrManager.service.fetchLatestHeartRate();

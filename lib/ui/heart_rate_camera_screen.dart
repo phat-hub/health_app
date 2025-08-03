@@ -56,9 +56,7 @@ class HeartRateCameraScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
           ),
           onPressed: () {
-            final userId =
-                context.read<AuthManager>().userId; // lấy userId đăng nhập
-            m.startMeasurement(context, userId: userId);
+            m.startMeasurement(context);
           },
           child: const Text("Bắt đầu đo"),
         ),
@@ -124,8 +122,7 @@ class HeartRateCameraScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
           ),
           onPressed: () {
-            final userId = context.read<AuthManager>().userId;
-            m.startMeasurement(context, userId: userId);
+            m.startMeasurement(context);
           },
           child: const Text("Đo lại"),
         ),
