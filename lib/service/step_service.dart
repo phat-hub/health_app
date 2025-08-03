@@ -38,6 +38,41 @@ class StepService {
     return totalSteps > 0 ? totalSteps : null;
   }
 
+  /// Lấy số bước từ Health Connect cho 1 ngày cụ thể
+  Future<int?> getStepsForDate(DateTime date) async {
+    await Permission.activityRecognition.request();
+    await _health.configure();
+
+    final types = [HealthDataType.STEPS];
+    final permissions = [HealthDataAccess.READ];
+
+    bool authorized =
+        await _health.requestAuthorization(types, permissions: permissions);
+    if (!authorized) return null;
+
+    final start = DateTime(date.year, date.month, date.day);
+    final end = date.isAtSameMomentAs(DateTime.now())
+        ? DateTime.now()
+        : start
+            .add(const Duration(days: 1))
+            .subtract(const Duration(seconds: 1));
+
+    int totalSteps = 0;
+    final data = await _health.getHealthDataFromTypes(
+      types: types,
+      startTime: start,
+      endTime: end,
+    );
+
+    for (var d in data) {
+      if (d.type == HealthDataType.STEPS && d.value is NumericHealthValue) {
+        totalSteps += (d.value as NumericHealthValue).numericValue.toInt();
+      }
+    }
+
+    return totalSteps > 0 ? totalSteps : null;
+  }
+
   /// Ghi số bước vào Health Connect
   Future<bool> writeStepsToHealthConnect(int steps) async {
     await Permission.activityRecognition.request();

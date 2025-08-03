@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeManager()),
         ChangeNotifierProvider(create: (_) => HeartRateManager()),
         ChangeNotifierProvider(create: (_) => HeartRateCameraManager()),
-        ChangeNotifierProvider(create: (_) => StepManager()..initSteps()),
+        ChangeNotifierProvider(create: (_) => StepManager()),
       ],
       child: Consumer<ThemeManager>(
         builder: (context, themeManager, _) {

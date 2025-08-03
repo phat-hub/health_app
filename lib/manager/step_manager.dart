@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+
 import '../screen.dart';
 
 class StepManager extends ChangeNotifier {
@@ -13,7 +14,8 @@ class StepManager extends ChangeNotifier {
   double distance = 0;
   Duration activeTime = Duration.zero;
 
-  Timer? _healthPollingTimer;
+  DateTime selectedDate = DateTime.now();
+  Timer? _pollingTimer;
 
   bool get isLoading => _isLoading;
 
@@ -23,10 +25,25 @@ class StepManager extends ChangeNotifier {
   }
 
   Future<void> initSteps() async {
-    setLoading(true);
+    await loadStepsForDate(selectedDate);
 
-    // Thử lấy dữ liệu từ Health Connect
-    int? healthSteps = await _service.getStepsFromHealthConnect();
+    // Nếu đang xem hôm nay thì bật realtime polling
+    if (_isToday(selectedDate)) {
+      _pollingTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+        loadStepsForDate(selectedDate);
+      });
+    }
+  }
+
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    return now.year == date.year &&
+        now.month == date.month &&
+        now.day == date.day;
+  }
+
+  Future<void> loadStepsForDate(DateTime date) async {
+    int? healthSteps = await _service.getStepsForDate(date);
 
     if (healthSteps != null) {
       hasHealthData = true;
@@ -34,30 +51,10 @@ class StepManager extends ChangeNotifier {
       _calculateMetrics();
     } else {
       hasHealthData = false;
+      steps = 0;
     }
-    notifyListeners();
 
-    // Polling 10s/lần để thử đọc lại
-    _healthPollingTimer = Timer.periodic(
-      const Duration(seconds: 10),
-      (_) async {
-        int? updatedSteps = await _service.getStepsFromHealthConnect();
-        if (updatedSteps != null) {
-          if (!hasHealthData || updatedSteps != steps) {
-            hasHealthData = true;
-            steps = updatedSteps;
-            _calculateMetrics();
-            notifyListeners();
-          }
-        } else {
-          if (hasHealthData) {
-            hasHealthData = false;
-            notifyListeners();
-          }
-        }
-      },
-    );
-
+    selectedDate = date;
     setLoading(false);
   }
 
@@ -74,7 +71,7 @@ class StepManager extends ChangeNotifier {
 
   @override
   void dispose() {
-    _healthPollingTimer?.cancel();
+    _pollingTimer?.cancel();
     super.dispose();
   }
 }
