@@ -5,7 +5,7 @@ class HeartRateCameraService {
   CameraController? _cameraController;
   bool _isMeasuring = false;
 
-  final int _sampleSeconds = 20; // 🔹 Đo 20 giây thay vì 10 giây
+  final int _sampleSeconds = 20; // Đo 20 giây
   final _redData = <double>[];
 
   final double _brightnessThreshold = 100; // Ngưỡng phát hiện tối ưu hơn
@@ -64,11 +64,11 @@ class HeartRateCameraService {
 
   double _extractAverageRed(CameraImage image) {
     final yBuffer = image.planes[0].bytes;
-    final uBuffer = image.planes[1].bytes;
     final vBuffer = image.planes[2].bytes;
 
     int width = image.width;
     int height = image.height;
+    // U ít liên quan, nhưng đôi khi camera lưu UV đan xen → phải biết pixelStride và rowStride để tách đúng V ra
     int uvRowStride = image.planes[1].bytesPerRow;
     int uvPixelStride = image.planes[1].bytesPerPixel ?? 2;
 
@@ -81,7 +81,6 @@ class HeartRateCameraService {
         int yIndex = y * image.planes[0].bytesPerRow + x;
 
         int Y = yBuffer[yIndex];
-        int U = uBuffer[uvIndex];
         int V = vBuffer[uvIndex];
 
         // Công thức chuyển YUV -> Red

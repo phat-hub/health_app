@@ -9,38 +9,33 @@ class HeartRateCameraScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => HeartRateCameraManager(),
-      child: Consumer<HeartRateCameraManager>(
-        builder: (context, m, _) {
-          return WillPopScope(
-            onWillPop: () async {
-              m.stopMeasurement();
-              return true;
-            },
-            child: Scaffold(
-              appBar: AppBar(
-                title: const Text("Đo nhịp tim"),
-                backgroundColor: Theme.of(context).primaryColor,
-              ),
-              body: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (!m.isMeasuring && m.bpm == null)
-                        _buildBeforeMeasure(context, m),
-                      if (m.isMeasuring) _buildDuringMeasure(context, m),
-                      if (!m.isMeasuring && m.bpm != null)
-                        _buildAfterMeasure(context, m),
-                    ],
-                  ),
-                ),
-              ),
+    final m = context.watch<HeartRateCameraManager>();
+
+    return WillPopScope(
+      onWillPop: () async {
+        m.stopMeasurement();
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Đo nhịp tim"),
+          backgroundColor: Theme.of(context).primaryColor,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!m.isMeasuring && m.bpm == null)
+                  _buildBeforeMeasure(context, m),
+                if (m.isMeasuring) _buildDuringMeasure(context, m),
+                if (!m.isMeasuring && m.bpm != null)
+                  _buildAfterMeasure(context, m),
+              ],
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }

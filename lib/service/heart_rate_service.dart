@@ -61,18 +61,34 @@ class HeartRateService {
   /// Lưu lịch sử lên Firebase
   Future<void> saveHistoryToFirebase(
       String userId, List<HeartRateRecord> history) async {
-    final batch = _firestore.batch();
+    if (history.isEmpty) return; // Không có gì để lưu thì thoát luôn
+
     final colRef = _firestore
         .collection('users')
         .doc(userId)
         .collection('heart_rate_history');
 
-    for (var record in history) {
-      final docRef = colRef.doc(record.date.toIso8601String());
-      batch.set(docRef, record.toMap(), SetOptions(merge: true));
-    }
+    const int batchSize =
+        500; // Firestore giới hạn mỗi batch tối đa 500 thao tác
+    for (var i = 0; i < history.length; i += batchSize) {
+      final batch = _firestore.batch();
 
-    await batch.commit();
+      // Xác định điểm kết thúc nhóm
+      final end =
+          (i + batchSize > history.length) ? history.length : i + batchSize;
+
+      // Lấy nhóm bản ghi tối đa 500
+      final batchRecords = history.sublist(i, end);
+
+      // Thêm từng bản ghi vào batch
+      for (var record in batchRecords) {
+        final docRef = colRef.doc(record.date.toIso8601String());
+        batch.set(docRef, record.toMap(), SetOptions(merge: true));
+      }
+
+      // Lưu nhóm này lên Firestore
+      await batch.commit();
+    }
   }
 
   /// Lấy lịch sử từ Firebase
@@ -148,8 +164,27 @@ class HeartRateService {
         .where('date', isLessThan: sevenDaysAgo.toIso8601String())
         .get();
 
-    for (var doc in snapshot.docs) {
-      await doc.reference.delete();
+    if (snapshot.docs.isEmpty) return;
+
+    // Chia nhỏ danh sách thành từng nhóm 500 document
+    const int batchSize = 500;
+    for (var i = 0; i < snapshot.docs.length; i += batchSize) {
+      final batch = _firestore.batch();
+
+      // Lấy tối đa 500 document cho mỗi batch
+      final end = (i + batchSize > snapshot.docs.length)
+          ? snapshot.docs.length
+          : i + batchSize;
+
+      final batchDocs = snapshot.docs.sublist(i, end);
+
+      // Thêm lệnh xóa cho mỗi document
+      for (var doc in batchDocs) {
+        batch.delete(doc.reference);
+      }
+
+      // Commit batch xóa
+      await batch.commit();
     }
   }
 }
