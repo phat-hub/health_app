@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../screen.dart';
 
@@ -9,13 +10,17 @@ class StepManager extends ChangeNotifier {
   bool _isLoading = false;
   bool hasHealthData = false;
   int steps = 0;
-  int goal = 6000;
+  int goal = 6000; // mặc định
   double calories = 0;
   double distance = 0;
   Duration activeTime = Duration.zero;
 
   DateTime selectedDate = DateTime.now();
   Timer? _pollingTimer;
+
+  StepManager() {
+    _loadGoalFromPrefs(); // <-- đọc goal ngay khi tạo object
+  }
 
   bool get isLoading => _isLoading;
 
@@ -27,7 +32,6 @@ class StepManager extends ChangeNotifier {
   Future<void> initSteps() async {
     await loadStepsForDate(selectedDate);
 
-    // Nếu đang xem hôm nay thì bật realtime polling
     if (_isToday(selectedDate)) {
       _pollingTimer = Timer.periodic(const Duration(seconds: 10), (_) {
         loadStepsForDate(selectedDate);
@@ -58,9 +62,20 @@ class StepManager extends ChangeNotifier {
     setLoading(false);
   }
 
-  void updateGoal(int newGoal) {
+  void updateGoal(int newGoal) async {
     goal = newGoal;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('daily_goal', goal); // lưu lại
+  }
+
+  Future<void> _loadGoalFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedGoal = prefs.getInt('daily_goal');
+    if (savedGoal != null) {
+      goal = savedGoal;
+      notifyListeners();
+    }
   }
 
   void _calculateMetrics() {

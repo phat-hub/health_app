@@ -118,19 +118,6 @@ class _StepScreenState extends State<StepScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Thông tin phụ
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _infoCard(Icons.access_time,
-                          "${manager.activeTime.inHours}h ${manager.activeTime.inMinutes % 60}m"),
-                      _infoCard(Icons.terrain,
-                          "${manager.distance.toStringAsFixed(0)} m"),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
                   // Sửa mục tiêu
                   GestureDetector(
                     onTap: () => _editGoal(context, manager),
@@ -143,6 +130,17 @@ class _StepScreenState extends State<StepScreen> {
                         const Icon(Icons.edit, size: 18),
                       ],
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Thông tin phụ
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _infoCard(Icons.access_time,
+                          "${manager.activeTime.inHours}h ${manager.activeTime.inMinutes % 60}m"),
+                      _infoCard(Icons.terrain,
+                          "${manager.distance.toStringAsFixed(0)} m"),
+                    ],
                   ),
                 ],
               ),
