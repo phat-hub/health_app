@@ -276,8 +276,10 @@ class _HealthHomePageState extends State<HealthHomePage> {
                           () {
                         Navigator.pushNamed(context, '/step');
                       }),
-                      _buildHealthCard(context, 'Giấc ngủ',
-                          'assets/images/sleep.png', () {}),
+                      _buildHealthCard(
+                          context, 'Giấc ngủ', 'assets/images/sleep.png', () {
+                        Navigator.pushNamed(context, '/sleep');
+                      }),
                     ],
                   ),
                 ],

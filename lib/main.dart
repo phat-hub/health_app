@@ -27,6 +27,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => HeartRateManager()),
         ChangeNotifierProvider(create: (_) => HeartRateCameraManager()),
         ChangeNotifierProvider(create: (_) => StepManager()),
+        ChangeNotifierProvider(create: (_) => SleepManager()),
       ],
       child: Consumer<ThemeManager>(
         builder: (context, themeManager, _) {
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
               '/heartRateHistory': (context) => const HeartRateHistoryScreen(),
               '/heartRateCamera': (context) => const HeartRateCameraScreen(),
               '/step': (context) => const StepScreen(),
+              '/sleep': (context) => const SleepScreen(),
             },
           );
         },
