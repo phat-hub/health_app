@@ -89,30 +89,46 @@ class _SleepScreenState extends State<SleepScreen> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              CircularProgressIndicator(
-                value: manager.recoveryScore / 100,
-                strokeWidth: 12,
-                backgroundColor: Colors.grey.shade300,
-                color: manager.recoveryColor,
-              ),
+              if (manager.hasData)
+                CircularProgressIndicator(
+                  value: manager.recoveryScore / 100,
+                  strokeWidth: 12,
+                  backgroundColor: Colors.grey.shade300,
+                  color: manager.recoveryColor,
+                )
+              else
+                CircularProgressIndicator(
+                  value: 0,
+                  strokeWidth: 12,
+                  backgroundColor: Colors.grey.shade300,
+                  color: Colors.grey,
+                ),
               Center(
                 child: Text(
-                  "${manager.recoveryScore.toStringAsFixed(0)}%",
-                  style: theme.textTheme.headlineMedium
-                      ?.copyWith(color: manager.recoveryColor),
+                  manager.hasData
+                      ? "${manager.recoveryScore.toStringAsFixed(0)}%"
+                      : "Không có\ndữ liệu",
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color:
+                        manager.hasData ? manager.recoveryColor : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          manager.recoveryLabel,
-          style: TextStyle(
-            color: manager.recoveryColor,
-            fontWeight: FontWeight.bold,
+        if (manager.hasData) ...[
+          const SizedBox(height: 8),
+          Text(
+            manager.recoveryLabel,
+            style: TextStyle(
+              color: manager.recoveryColor,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
+        ]
       ],
     );
   }
@@ -124,15 +140,24 @@ class _SleepScreenState extends State<SleepScreen> {
       runSpacing: 12,
       children: [
         _infoCard(
-            "Thời gian ngủ", manager.formatDuration(data.total), Colors.green),
+          "Thời gian ngủ",
+          manager.hasData ? manager.formatDuration(data.total) : "0g 0p",
+          Colors.green,
+        ),
         _infoCard(
-            "Giờ ngủ",
-            DateFormat.Hm().format(data.bedTime ?? DateTime.now()),
-            Colors.blue),
+          "Giờ ngủ",
+          manager.hasData && data.bedTime != null
+              ? DateFormat.Hm().format(data.bedTime!)
+              : "0:00",
+          Colors.blue,
+        ),
         _infoCard(
-            "Giờ thức",
-            DateFormat.Hm().format(data.wakeTime ?? DateTime.now()),
-            Colors.orange),
+          "Giờ thức",
+          manager.hasData && data.wakeTime != null
+              ? DateFormat.Hm().format(data.wakeTime!)
+              : "0:00",
+          Colors.orange,
+        ),
       ],
     );
   }
@@ -142,18 +167,31 @@ class _SleepScreenState extends State<SleepScreen> {
     return Column(
       children: [
         _metricCard(
-            "Ngủ REM",
-            "${manager.formatDuration(data.rem)}, ${manager.remPercent.toStringAsFixed(1)}%",
-            Colors.green),
+          "Ngủ REM",
+          manager.hasData
+              ? "${manager.formatDuration(data.rem)}, ${manager.remPercent.toStringAsFixed(1)}%"
+              : "0g 0p, 0%",
+          Colors.green,
+        ),
         _metricCard(
-            "Ngủ nông",
-            "${manager.formatDuration(data.light)}, ${manager.lightPercent.toStringAsFixed(1)}%",
-            Colors.orange),
+          "Ngủ nông",
+          manager.hasData
+              ? "${manager.formatDuration(data.light)}, ${manager.lightPercent.toStringAsFixed(1)}%"
+              : "0g 0p, 0%",
+          Colors.orange,
+        ),
         _metricCard(
-            "Ngủ sâu",
-            "${manager.formatDuration(data.deep)}, ${manager.deepPercent.toStringAsFixed(1)}%",
-            Colors.blue),
-        _metricCard("Thức giấc", "${data.awakeCount} lần", Colors.red),
+          "Ngủ sâu",
+          manager.hasData
+              ? "${manager.formatDuration(data.deep)}, ${manager.deepPercent.toStringAsFixed(1)}%"
+              : "0g 0p, 0%",
+          Colors.blue,
+        ),
+        _metricCard(
+          "Thức giấc",
+          manager.hasData ? "${data.awakeCount} lần" : "0 lần",
+          Colors.red,
+        ),
       ],
     );
   }

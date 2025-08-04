@@ -5,9 +5,11 @@ import '../screen.dart';
 class SleepManager extends ChangeNotifier {
   final SleepService _service = SleepService();
 
-  SleepData? sleepData;
+  SleepRecord? sleepData;
   bool isLoading = false;
   DateTime selectedDate = DateTime.now();
+
+  bool get hasData => sleepData != null && sleepData!.total.inMinutes > 0;
 
   Future<void> loadSleepData(DateTime date) async {
     isLoading = true;
@@ -26,17 +28,23 @@ class SleepManager extends ChangeNotifier {
 
   double get remPercent {
     if (sleepData == null || sleepData!.total.inMinutes == 0) return 0;
-    return (sleepData!.rem.inMinutes / sleepData!.total.inMinutes) * 100;
+    final totalKnown = sleepData!.rem + sleepData!.light + sleepData!.deep;
+    if (totalKnown.inMinutes == 0) return 0;
+    return (sleepData!.rem.inMinutes / totalKnown.inMinutes) * 100;
   }
 
   double get lightPercent {
     if (sleepData == null || sleepData!.total.inMinutes == 0) return 0;
-    return (sleepData!.light.inMinutes / sleepData!.total.inMinutes) * 100;
+    final totalKnown = sleepData!.rem + sleepData!.light + sleepData!.deep;
+    if (totalKnown.inMinutes == 0) return 0;
+    return (sleepData!.light.inMinutes / totalKnown.inMinutes) * 100;
   }
 
   double get deepPercent {
     if (sleepData == null || sleepData!.total.inMinutes == 0) return 0;
-    return (sleepData!.deep.inMinutes / sleepData!.total.inMinutes) * 100;
+    final totalKnown = sleepData!.rem + sleepData!.light + sleepData!.deep;
+    if (totalKnown.inMinutes == 0) return 0;
+    return (sleepData!.deep.inMinutes / totalKnown.inMinutes) * 100;
   }
 
   double get recoveryScore {

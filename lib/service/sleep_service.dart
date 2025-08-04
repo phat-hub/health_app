@@ -1,10 +1,12 @@
 import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../screen.dart';
+
 class SleepService {
   final Health _health = Health();
 
-  Future<SleepData?> getSleepDataForDate(DateTime date) async {
+  Future<SleepRecord?> getSleepDataForDate(DateTime date) async {
     await Permission.activityRecognition.request();
     await _health.configure();
 
@@ -56,7 +58,7 @@ class SleepService {
       }
     }
 
-    return SleepData(
+    return SleepRecord(
       total: total,
       light: light,
       deep: deep,
@@ -66,24 +68,4 @@ class SleepService {
       wakeTime: wakeTime,
     );
   }
-}
-
-class SleepData {
-  final Duration total;
-  final Duration light;
-  final Duration deep;
-  final Duration rem;
-  final int awakeCount;
-  final DateTime? bedTime;
-  final DateTime? wakeTime;
-
-  SleepData({
-    required this.total,
-    required this.light,
-    required this.deep,
-    required this.rem,
-    required this.awakeCount,
-    this.bedTime,
-    this.wakeTime,
-  });
 }

@@ -5,6 +5,7 @@ export 'service/step_service.dart';
 export 'service/sleep_service.dart';
 
 export 'model/heart_rate_record.dart';
+export 'model/sleep_record.dart';
 
 export 'manager/heart_rate_manager.dart';
 export 'manager/auth_manager.dart';

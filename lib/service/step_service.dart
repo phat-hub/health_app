@@ -7,37 +7,6 @@ class StepService {
   final Health _health = Health();
   StreamSubscription<StepCount>? _pedometerSubscription;
 
-  /// Lấy số bước từ Health Connect
-  Future<int?> getStepsFromHealthConnect() async {
-    await Permission.activityRecognition.request();
-    await _health.configure();
-
-    final types = [HealthDataType.STEPS];
-    final permissions = [HealthDataAccess.READ];
-
-    bool authorized =
-        await _health.requestAuthorization(types, permissions: permissions);
-    if (!authorized) return null;
-
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-
-    int totalSteps = 0;
-    final data = await _health.getHealthDataFromTypes(
-      types: types,
-      startTime: today,
-      endTime: now,
-    );
-
-    for (var d in data) {
-      if (d.type == HealthDataType.STEPS && d.value is NumericHealthValue) {
-        totalSteps += (d.value as NumericHealthValue).numericValue.toInt();
-      }
-    }
-
-    return totalSteps > 0 ? totalSteps : null;
-  }
-
   /// Lấy số bước từ Health Connect cho 1 ngày cụ thể
   Future<int?> getStepsForDate(DateTime date) async {
     await Permission.activityRecognition.request();
