@@ -15,7 +15,63 @@ class _SleepScreenState extends State<SleepScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<SleepManager>().loadSleepData(DateTime.now());
+    final manager = context.read<SleepManager>();
+    manager.init();
+    manager.loadSleepData(DateTime.now());
+  }
+
+  void _showReminderDialog(SleepManager manager) {
+    bool tempEnabled = manager.reminderEnabled;
+    TimeOfDay? tempTime =
+        manager.reminderTime ?? const TimeOfDay(hour: 22, minute: 0);
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text("Nhắc nhở đi ngủ"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SwitchListTile(
+                title: const Text("Bật nhắc nhở"),
+                value: tempEnabled,
+                onChanged: (v) {
+                  setState(() => tempEnabled = v);
+                },
+              ),
+              if (tempEnabled)
+                ListTile(
+                  title: Text("Giờ nhắc: ${tempTime!.format(context)}"),
+                  trailing: const Icon(Icons.access_time),
+                  onTap: () async {
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: tempTime!,
+                    );
+                    if (picked != null) {
+                      setState(() => tempTime = picked);
+                    }
+                  },
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Hủy"),
+              onPressed: () => Navigator.pop(context),
+            ),
+            ElevatedButton(
+              child: const Text("Lưu"),
+              onPressed: () async {
+                await manager.toggleReminder(tempEnabled, time: tempTime);
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -26,6 +82,15 @@ class _SleepScreenState extends State<SleepScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Giấc ngủ"),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.notifications_active,
+              color: manager.reminderEnabled ? Colors.yellow : Colors.white,
+            ),
+            onPressed: () => _showReminderDialog(manager),
+          ),
+        ],
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
       ),

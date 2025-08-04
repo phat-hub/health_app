@@ -1,10 +1,20 @@
 import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
+import 'package:android_intent_plus/android_intent.dart';
 
 import '../screen.dart';
 
 class SleepService {
   final Health _health = Health();
+  final FlutterLocalNotificationsPlugin _notifications =
+      FlutterLocalNotificationsPlugin();
 
   Future<SleepRecord?> getSleepDataForDate(DateTime date) async {
     await Permission.activityRecognition.request();
@@ -67,5 +77,115 @@ class SleepService {
       bedTime: bedTime,
       wakeTime: wakeTime,
     );
+  }
+
+  Future<void> initNotifications() async {
+    tz.initializeTimeZones();
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const settings = InitializationSettings(android: android);
+    await _notifications.initialize(settings);
+
+    await requestNotificationPermission();
+  }
+
+  Future<void> setSleepReminder(bool enabled, {TimeOfDay? time}) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('sleepReminderEnabled', enabled);
+
+    if (enabled && time != null) {
+      bool granted = await requestExactAlarmPermission();
+      if (!granted) {
+        debugPrint("⚠ Quyền exact alarm chưa được bật → không thể đặt lịch.");
+        return;
+      }
+      prefs.setInt('sleepReminderHour', time.hour);
+      prefs.setInt('sleepReminderMinute', time.minute);
+      await scheduleReminder(time);
+    } else {
+      await cancelReminder();
+    }
+  }
+
+  Future<bool> isReminderEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('sleepReminderEnabled') ?? false;
+  }
+
+  Future<TimeOfDay?> getReminderTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!(prefs.getBool('sleepReminderEnabled') ?? false)) return null;
+    final h = prefs.getInt('sleepReminderHour');
+    final m = prefs.getInt('sleepReminderMinute');
+    if (h == null || m == null) return null;
+    return TimeOfDay(hour: h, minute: m);
+  }
+
+  Future<void> scheduleReminder(TimeOfDay time) async {
+    final now = tz.TZDateTime.now(tz.local);
+    tz.TZDateTime scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      time.hour,
+      time.minute,
+    );
+
+    if (scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+
+    await _notifications.zonedSchedule(
+      0,
+      'Đã tới giờ đi ngủ',
+      'Hãy chuẩn bị đi ngủ để có giấc ngủ ngon!',
+      scheduled,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'sleep_channel',
+          'Nhắc nhở đi ngủ',
+          channelDescription: 'Thông báo nhắc nhở giờ đi ngủ mỗi ngày',
+          importance: Importance.max,
+          priority: Priority.high,
+          visibility: NotificationVisibility.public,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
+  }
+
+  Future<void> cancelReminder() async {
+    await _notifications.cancelAll();
+  }
+
+  Future<void> requestNotificationPermission() async {
+    if (await Permission.notification.isDenied) {
+      await Permission.notification.request();
+    }
+  }
+
+  /// Yêu cầu quyền exact alarm (Mở thẳng trang "Báo thức & lời nhắc")
+  Future<bool> requestExactAlarmPermission() async {
+    if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt >= 31) {
+        if (!await Permission.scheduleExactAlarm.isGranted) {
+          try {
+            final intent = AndroidIntent(
+              action: 'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
+              package: 'com.example.health_app',
+            );
+            await intent.launch();
+          } catch (e) {
+            debugPrint("Không thể mở trang quyền exact alarm: $e");
+          }
+          return false;
+        }
+      }
+    }
+    return true;
   }
 }
