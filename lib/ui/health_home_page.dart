@@ -260,7 +260,9 @@ class _HealthHomePageState extends State<HealthHomePage> {
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
                       _buildHealthCard(context, 'Huyết áp',
-                          'assets/images/blood_pressure.png', () {}),
+                          'assets/images/blood_pressure.png', () {
+                        Navigator.pushNamed(context, '/bloodPressure');
+                      }),
                       _buildHealthCard(context, 'Đường huyết',
                           'assets/images/glucose.png', () {}),
                       _buildHealthCard(

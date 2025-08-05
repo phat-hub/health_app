@@ -37,25 +37,51 @@ class _WaterReminderScreenState extends State<WaterReminderScreen> {
               itemCount: manager.reminders.length,
               itemBuilder: (context, index) {
                 final r = manager.reminders[index];
-                return ListTile(
-                  leading: const Icon(Icons.alarm),
-                  title: Text(_formatTime(r.hour, r.minute)),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Switch(
-                        value: r.enabled,
-                        onChanged: (v) {
-                          manager.toggleReminder(index, v);
-                        },
+
+                return Dismissible(
+                  key: ValueKey("${r.hour}:${r.minute}"),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    color: Colors.blue,
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: const Icon(Icons.delete, color: Colors.white),
+                  ),
+                  confirmDismiss: (direction) async {
+                    return await showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text("Xác nhận"),
+                        content:
+                            const Text("Bạn có chắc muốn xóa nhắc nhở này?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text("Hủy"),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                            ),
+                            child: const Text("Xóa"),
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          manager.removeReminder(index);
-                        },
-                      ),
-                    ],
+                    );
+                  },
+                  onDismissed: (_) async {
+                    manager.removeReminder(index);
+                  },
+                  child: ListTile(
+                    leading: const Icon(Icons.alarm),
+                    title: Text(_formatTime(r.hour, r.minute)),
+                    trailing: Switch(
+                      value: r.enabled,
+                      onChanged: (v) {
+                        manager.toggleReminder(index, v);
+                      },
+                    ),
                   ),
                 );
               },

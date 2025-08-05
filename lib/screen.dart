@@ -4,10 +4,12 @@ export 'service/heart_rate_service.dart';
 export 'service/step_service.dart';
 export 'service/sleep_service.dart';
 export 'service/water_service.dart';
+export 'service/blood_pressure_service.dart';
 
 export 'model/heart_rate_record.dart';
 export 'model/sleep_record.dart';
 export 'model/water_reminder_time.dart';
+export 'model/blood_pressure_record.dart';
 
 export 'manager/heart_rate_manager.dart';
 export 'manager/auth_manager.dart';
@@ -16,6 +18,7 @@ export 'manager/heart_rate_camera_manager.dart';
 export 'manager/step_manager.dart';
 export 'manager/sleep_manager.dart';
 export 'manager/water_manager.dart';
+export 'manager/blood_pressure_manager.dart';
 
 export 'ui/login_screen.dart';
 export 'ui/heart_rate_history_screen.dart';
@@ -27,5 +30,8 @@ export 'ui/water_screen.dart';
 export 'ui/water_stats_screen.dart';
 export 'ui/water_reminder_screen.dart';
 export 'ui/step_stats_screen.dart';
+export 'ui/blood_pressure_add_screen.dart';
+export 'ui/blood_pressure_screen.dart';
+export 'ui/blood_pressure_info_screen.dart';
 
 export 'shared/app_theme.dart';
