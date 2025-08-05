@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../screen.dart';
+import '../../screen.dart';
 
 class WaterReminderScreen extends StatefulWidget {
   const WaterReminderScreen({Key? key}) : super(key: key);

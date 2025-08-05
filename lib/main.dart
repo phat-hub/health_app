@@ -50,6 +50,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SleepManager()),
         ChangeNotifierProvider(create: (_) => WaterManager()),
         ChangeNotifierProvider(create: (_) => BloodPressureManager()),
+        ChangeNotifierProvider(create: (_) => BloodGlucoseManager()),
       ],
       child: Consumer<ThemeManager>(
         builder: (context, themeManager, _) {
@@ -75,6 +76,9 @@ class MyApp extends StatelessWidget {
               '/bloodPressureAdd': (context) => const BloodPressureAddScreen(),
               '/bloodPressureInfo': (context) =>
                   const BloodPressureInfoScreen(),
+              '/bloodGlucose': (context) => const BloodGlucoseScreen(),
+              '/bloodGlucoseAdd': (context) => const BloodGlucoseAddScreen(),
+              '/bloodGlucoseInfo': (context) => const BloodGlucoseInfoScreen(),
             },
           );
         },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../screen.dart';
+import '../../screen.dart';
 
 class BloodPressureAddScreen extends StatefulWidget {
   const BloodPressureAddScreen({super.key});

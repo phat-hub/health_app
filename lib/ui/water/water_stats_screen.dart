@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../screen.dart';
 
-import '../screen.dart';
-
-class StepStatsScreen extends StatelessWidget {
-  const StepStatsScreen({super.key});
+class WaterStatsScreen extends StatelessWidget {
+  const WaterStatsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final manager = context.watch<StepManager>();
+    final manager = context.watch<WaterManager>();
 
-    final stats = manager.stepStats;
+    final stats = manager.stats;
     final goal = manager.goal;
     final theme = Theme.of(context);
 
@@ -31,7 +30,7 @@ class StepStatsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Thống kê bước chân"),
+        title: const Text("Thống kê uống nước"),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
       ),
@@ -40,6 +39,7 @@ class StepStatsScreen extends StatelessWidget {
             ? const Center(child: Text("Chưa có dữ liệu"))
             : Column(
                 children: [
+                  // ====== Tổng cộng & Mục tiêu ======
                   Container(
                     margin: const EdgeInsets.all(16),
                     padding: const EdgeInsets.symmetric(
@@ -58,16 +58,18 @@ class StepStatsScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _summaryItem("Tổng cộng", "$totalAll bước"),
+                        _summaryItem("Tổng cộng", "$totalAll ml"),
                         Container(
                           width: 1,
                           height: 30,
                           color: Colors.grey.shade300,
                         ),
-                        _summaryItem("Mục tiêu", "$goal bước"),
+                        _summaryItem("Mục tiêu", "$goal ml"),
                       ],
                     ),
                   ),
+
+                  // ====== Biểu đồ ======
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -137,7 +139,7 @@ class StepStatsScreen extends StatelessWidget {
                                     alignment: Alignment.topRight,
                                     style: const TextStyle(
                                         color: Colors.red, fontSize: 12),
-                                    labelResolver: (_) => 'Mục tiêu $goal bước',
+                                    labelResolver: (_) => 'Mục tiêu $goal ml',
                                   ),
                                 ),
                               ],
