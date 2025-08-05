@@ -29,10 +29,17 @@ class _StepScreenState extends State<StepScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Bộ đếm bước"),
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: Colors.white,
-      ),
+          title: const Text("Bộ đếm bước"),
+          backgroundColor: theme.colorScheme.primary,
+          foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.bar_chart),
+              onPressed: () {
+                Navigator.pushNamed(context, '/stepStats');
+              },
+            )
+          ]),
       body: manager.isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(

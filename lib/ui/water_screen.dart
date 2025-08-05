@@ -36,19 +36,13 @@ class _WaterScreenState extends State<WaterScreen> {
           IconButton(
             icon: const Icon(Icons.bar_chart),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const WaterStatsScreen()),
-              );
+              Navigator.pushNamed(context, '/waterStats');
             },
           ),
           IconButton(
             icon: const Icon(Icons.notifications_active),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const WaterReminderScreen()),
-              );
+              Navigator.pushNamed(context, '/waterReminder');
             },
           ),
         ],

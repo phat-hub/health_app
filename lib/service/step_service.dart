@@ -83,4 +83,22 @@ class StepService {
   void stopPedometer() {
     _pedometerSubscription?.cancel();
   }
+
+  Future<Map<DateTime, int>> getStepStatsLast30Days() async {
+    final Map<DateTime, int> stats = {};
+    final now = DateTime.now();
+
+    // Lấy 30 ngày gần nhất, bao gồm hôm nay
+    for (int i = 0; i < 30; i++) {
+      final date = now.subtract(Duration(days: i));
+      final steps = await getStepsForDate(date) ?? 0;
+      stats[DateTime(date.year, date.month, date.day)] = steps;
+    }
+
+    // Sắp xếp từ cũ → mới
+    final sortedKeys = stats.keys.toList()..sort();
+    return {
+      for (var k in sortedKeys) k: stats[k]!,
+    };
+  }
 }

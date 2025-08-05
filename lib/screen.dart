@@ -26,5 +26,6 @@ export 'ui/sleep_screen.dart';
 export 'ui/water_screen.dart';
 export 'ui/water_stats_screen.dart';
 export 'ui/water_reminder_screen.dart';
+export 'ui/step_stats_screen.dart';
 
 export 'shared/app_theme.dart';

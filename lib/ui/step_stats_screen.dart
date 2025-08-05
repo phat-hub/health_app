@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
 import '../screen.dart';
 
-class WaterStatsScreen extends StatelessWidget {
-  const WaterStatsScreen({super.key});
+class StepStatsScreen extends StatelessWidget {
+  const StepStatsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final manager = context.watch<WaterManager>();
+    final manager = context.watch<StepManager>();
 
-    final stats = manager.stats;
+    final stats = manager.stepStats;
     final goal = manager.goal;
     final theme = Theme.of(context);
 
@@ -30,7 +31,7 @@ class WaterStatsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Thống kê uống nước"),
+        title: const Text("Thống kê bước chân"),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
       ),
@@ -39,7 +40,6 @@ class WaterStatsScreen extends StatelessWidget {
             ? const Center(child: Text("Chưa có dữ liệu"))
             : Column(
                 children: [
-                  // ====== Tổng cộng & Mục tiêu ======
                   Container(
                     margin: const EdgeInsets.all(16),
                     padding: const EdgeInsets.symmetric(
@@ -58,18 +58,16 @@ class WaterStatsScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _summaryItem("Tổng cộng", "$totalAll ml"),
+                        _summaryItem("Tổng cộng", "$totalAll bước"),
                         Container(
                           width: 1,
                           height: 30,
                           color: Colors.grey.shade300,
                         ),
-                        _summaryItem("Mục tiêu", "$goal ml"),
+                        _summaryItem("Mục tiêu", "$goal bước"),
                       ],
                     ),
                   ),
-
-                  // ====== Biểu đồ ======
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -139,7 +137,7 @@ class WaterStatsScreen extends StatelessWidget {
                                     alignment: Alignment.topRight,
                                     style: const TextStyle(
                                         color: Colors.red, fontSize: 12),
-                                    labelResolver: (_) => 'Mục tiêu $goal ml',
+                                    labelResolver: (_) => 'Mục tiêu $goal bước',
                                   ),
                                 ),
                               ],

@@ -18,6 +18,8 @@ class StepManager extends ChangeNotifier {
   DateTime selectedDate = DateTime.now();
   Timer? _pollingTimer;
 
+  Map<DateTime, int> stepStats = {};
+
   StepManager() {
     _loadGoalFromPrefs(); // <-- đọc goal ngay khi tạo object
   }
@@ -31,6 +33,7 @@ class StepManager extends ChangeNotifier {
 
   Future<void> initSteps() async {
     await loadStepsForDate(selectedDate);
+    await loadStepStats();
 
     if (_isToday(selectedDate)) {
       _pollingTimer = Timer.periodic(const Duration(seconds: 10), (_) {
@@ -82,6 +85,11 @@ class StepManager extends ChangeNotifier {
     distance = steps * 0.7;
     calories = steps * 0.035;
     activeTime = Duration(minutes: (steps / 100).round());
+  }
+
+  Future<void> loadStepStats() async {
+    stepStats = await _service.getStepStatsLast30Days();
+    notifyListeners();
   }
 
   @override
