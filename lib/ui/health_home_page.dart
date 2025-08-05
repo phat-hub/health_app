@@ -276,8 +276,11 @@ class _HealthHomePageState extends State<HealthHomePage> {
                           context, 'Uống nước', 'assets/images/water.png', () {
                         Navigator.pushNamed(context, '/water');
                       }),
-                      _buildHealthCard(context, 'Bác sĩ AI',
-                          'assets/images/doctor_ai.png', () {}),
+                      _buildHealthCard(
+                          context, 'Bác sĩ AI', 'assets/images/doctor_ai.png',
+                          () {
+                        Navigator.pushNamed(context, '/aiDoctor');
+                      }),
                       _buildHealthCard(context, 'Máy quét thực phẩm',
                           'assets/images/scanner.png', () {}),
                       _buildHealthCard(

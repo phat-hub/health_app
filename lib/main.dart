@@ -52,6 +52,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BloodPressureManager()),
         ChangeNotifierProvider(create: (_) => BloodGlucoseManager()),
         ChangeNotifierProvider(create: (_) => BmiManager()),
+        ChangeNotifierProvider(create: (_) => ChatManager()),
       ],
       child: Consumer<ThemeManager>(
         builder: (context, themeManager, _) {
@@ -83,6 +84,8 @@ class MyApp extends StatelessWidget {
               '/bmi': (context) => const BmiScreen(),
               '/bmiAdd': (context) => const BmiAddScreen(),
               '/bmiInfo': (context) => const BmiInfoScreen(),
+              '/aiDoctor': (context) => const AiDoctorScreen(),
+              '/chat': (context) => const ChatScreen(),
             },
           );
         },
