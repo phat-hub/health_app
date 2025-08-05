@@ -1,5 +1,15 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:flutter/material.dart';
+
+import '../screen.dart';
 
 class WaterService {
   static const String firstOpenKey = 'water_first_open_date';
@@ -94,5 +104,125 @@ class WaterService {
     };
 
     return sortedStats;
+  }
+
+  final FlutterLocalNotificationsPlugin _notifications =
+      FlutterLocalNotificationsPlugin();
+
+  static const String _prefsKey = 'water_reminders';
+
+  Future<void> initNotifications() async {
+    tz.initializeTimeZones();
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const settings = InitializationSettings(android: android);
+    await _notifications.initialize(settings);
+    await requestNotificationPermission();
+    await await requestExactAlarmPermission();
+  }
+
+  Future<void> requestNotificationPermission() async {
+    if (await Permission.notification.isDenied) {
+      await Permission.notification.request();
+    }
+  }
+
+  Future<List<WaterReminderTime>> getReminders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonStr = prefs.getString(_prefsKey);
+    if (jsonStr == null) return [];
+    final list = jsonDecode(jsonStr) as List;
+    return list.map((e) => WaterReminderTime.fromJson(e)).toList();
+  }
+
+  Future<void> saveReminders(List<WaterReminderTime> reminders) async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonStr = jsonEncode(reminders.map((e) => e.toJson()).toList());
+    await prefs.setString(_prefsKey, jsonStr);
+  }
+
+  Future<void> scheduleAllReminders() async {
+    await _notifications.cancelAll();
+    final reminders = await getReminders();
+    for (int i = 0; i < reminders.length; i++) {
+      final r = reminders[i];
+      if (r.enabled) {
+        await _scheduleReminder(r, i);
+      }
+    }
+  }
+
+  Future<void> _scheduleReminder(WaterReminderTime reminder, int id) async {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      reminder.hour,
+      reminder.minute,
+    );
+    if (scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+
+    await _notifications.zonedSchedule(
+      id,
+      '💧 Uống nước ngay nào!',
+      'Đã đến giờ uống nước để giữ sức khỏe 💙',
+      scheduled,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'water_channel',
+          'Nhắc nhở uống nước',
+          channelDescription: 'Thông báo nhắc nhở uống nước trong ngày',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+      matchDateTimeComponents: DateTimeComponents.time,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+  }
+
+  Future<bool> requestExactAlarmPermission() async {
+    if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt >= 31) {
+        if (!await Permission.scheduleExactAlarm.isGranted) {
+          try {
+            final intent = AndroidIntent(
+              action: 'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
+              package: 'com.example.health_app',
+            );
+            await intent.launch();
+          } catch (e) {
+            debugPrint("Không thể mở trang quyền exact alarm: $e");
+          }
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  Future<void> showTestNotification() async {
+    await _notifications.show(
+      999, // ID khác để không đè thông báo khác
+      '📢 Test nhắc nhở ngủ',
+      'Thông báo test này hiển thị ngay lập tức',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'test_channel',
+          'Kênh Test',
+          importance: Importance.max,
+          priority: Priority.high,
+          visibility: NotificationVisibility.public,
+        ),
+      ),
+    );
+
+    debugPrint("🛑 Test notification đã gửi ngay lập tức");
   }
 }

@@ -19,6 +19,8 @@ class WaterManager extends ChangeNotifier {
 
   Map<DateTime, int> stats = {};
 
+  List<WaterReminderTime> reminders = [];
+
   WaterManager() {
     _init();
   }
@@ -109,6 +111,34 @@ class WaterManager extends ChangeNotifier {
 
   Future<void> loadStats() async {
     stats = await _service.getWaterStatsLast30Days(firstOpenDate);
+    notifyListeners();
+  }
+
+  Future<void> addReminder(int hour, int minute) async {
+    reminders.add(WaterReminderTime(hour: hour, minute: minute, enabled: true));
+    await _service.saveReminders(reminders);
+    await _service.scheduleAllReminders();
+    await _service.showTestNotification();
+    notifyListeners();
+  }
+
+  Future<void> removeReminder(int index) async {
+    reminders.removeAt(index);
+    await _service.saveReminders(reminders);
+    await _service.scheduleAllReminders();
+    notifyListeners();
+  }
+
+  Future<void> toggleReminder(int index, bool enabled) async {
+    reminders[index] = reminders[index].copyWith(enabled: enabled);
+    await _service.saveReminders(reminders);
+    await _service.scheduleAllReminders();
+    notifyListeners();
+  }
+
+  Future<void> initNotifications() async {
+    await _service.initNotifications();
+    reminders = await _service.getReminders();
     notifyListeners();
   }
 }

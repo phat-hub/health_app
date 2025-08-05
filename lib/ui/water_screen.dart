@@ -29,7 +29,7 @@ class _WaterScreenState extends State<WaterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Nhắc nhở uống nước"),
+        title: const Text("Theo dõi uống nước"),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
         actions: [
@@ -39,6 +39,15 @@ class _WaterScreenState extends State<WaterScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const WaterStatsScreen()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_active),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const WaterReminderScreen()),
               );
             },
           ),

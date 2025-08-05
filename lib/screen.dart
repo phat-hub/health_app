@@ -7,6 +7,7 @@ export 'service/water_service.dart';
 
 export 'model/heart_rate_record.dart';
 export 'model/sleep_record.dart';
+export 'model/water_reminder_time.dart';
 
 export 'manager/heart_rate_manager.dart';
 export 'manager/auth_manager.dart';
@@ -24,5 +25,6 @@ export 'ui/step_screen.dart';
 export 'ui/sleep_screen.dart';
 export 'ui/water_screen.dart';
 export 'ui/water_stats_screen.dart';
+export 'ui/water_reminder_screen.dart';
 
 export 'shared/app_theme.dart';
