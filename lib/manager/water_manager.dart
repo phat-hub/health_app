@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../screen.dart'; // import WaterService
+import '../screen.dart';
 
 class WaterManager extends ChangeNotifier {
   final WaterService _service = WaterService();
@@ -17,6 +17,8 @@ class WaterManager extends ChangeNotifier {
 
   List<int> _drinkHistory = [];
 
+  Map<DateTime, int> stats = {};
+
   WaterManager() {
     _init();
   }
@@ -29,6 +31,7 @@ class WaterManager extends ChangeNotifier {
       await _service.deleteOldData(30);
     }
     await loadWaterForDate(DateTime.now());
+    await loadStats(); // Gọi luôn khi khởi tạo
   }
 
   Future<void> _loadPrefs() async {
@@ -63,6 +66,7 @@ class WaterManager extends ChangeNotifier {
     _drinkHistory.add(ml);
     await _service.saveDrinkHistory(selectedDate, _drinkHistory);
     _recalculate();
+    await loadStats(); // Cập nhật thống kê luôn
     notifyListeners();
   }
 
@@ -72,6 +76,7 @@ class WaterManager extends ChangeNotifier {
     _drinkHistory.removeLast();
     await _service.saveDrinkHistory(selectedDate, _drinkHistory);
     _recalculate();
+    await loadStats();
     notifyListeners();
   }
 
@@ -100,5 +105,10 @@ class WaterManager extends ChangeNotifier {
       return DateTime.now().subtract(const Duration(days: 30));
     }
     return firstOpenDate;
+  }
+
+  Future<void> loadStats() async {
+    stats = await _service.getWaterStatsLast30Days(firstOpenDate);
+    notifyListeners();
   }
 }

@@ -64,4 +64,35 @@ class WaterService {
       }
     }
   }
+
+  Future<Map<DateTime, int>> getWaterStatsLast30Days(
+      DateTime firstOpenDate) async {
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+
+    // Số ngày cần lấy: từ ngày mở đầu tiên hoặc tối đa 30 ngày gần nhất
+    int daysDiff = now.difference(firstOpenDate).inDays + 1;
+    int daysToFetch = daysDiff > 30 ? 30 : daysDiff;
+
+    Map<DateTime, int> stats = {};
+
+    for (int i = 0; i < daysToFetch; i++) {
+      final date = now.subtract(Duration(days: i));
+      final data = prefs.getString(_getHistoryKey(date));
+      int total = 0;
+      if (data != null) {
+        List<int> history = List<int>.from(jsonDecode(data));
+        total = history.fold(0, (sum, e) => sum + e);
+      }
+      stats[DateTime(date.year, date.month, date.day)] = total;
+    }
+
+    // Đảo ngược thứ tự để từ cũ -> mới
+    final sortedKeys = stats.keys.toList()..sort();
+    Map<DateTime, int> sortedStats = {
+      for (var key in sortedKeys) key: stats[key]!,
+    };
+
+    return sortedStats;
+  }
 }
