@@ -6,12 +6,14 @@ export 'service/sleep_service.dart';
 export 'service/water_service.dart';
 export 'service/blood_pressure_service.dart';
 export 'service/blood_glucose_service.dart';
+export 'service/bmi_service.dart';
 
 export 'model/heart_rate_record.dart';
 export 'model/sleep_record.dart';
 export 'model/water_reminder_time.dart';
 export 'model/blood_pressure_record.dart';
 export 'model/blood_glucose_record.dart';
+export 'model/bmi_record.dart';
 
 export 'manager/heart_rate_manager.dart';
 export 'manager/auth_manager.dart';
@@ -22,6 +24,7 @@ export 'manager/sleep_manager.dart';
 export 'manager/water_manager.dart';
 export 'manager/blood_pressure_manager.dart';
 export 'manager/blood_glucose_manager.dart';
+export 'manager/bmi_manager.dart';
 
 export 'ui/login_screen.dart';
 export 'ui/heart_rate/heart_rate_history_screen.dart';
@@ -39,5 +42,8 @@ export 'ui/blood_pressure/blood_pressure_info_screen.dart';
 export 'ui/blood_glucose/blood_glucose_add_screen.dart';
 export 'ui/blood_glucose/blood_glucose_info_screen.dart';
 export 'ui/blood_glucose/blood_glucose_screen.dart';
+export 'ui/bmi/bmi_add_screen.dart';
+export 'ui/bmi/bmi_info_screen.dart';
+export 'ui/bmi/bmi_screen.dart';
 
 export 'shared/app_theme.dart';

@@ -268,8 +268,10 @@ class _HealthHomePageState extends State<HealthHomePage> {
                           () {
                         Navigator.pushNamed(context, '/bloodGlucose');
                       }),
-                      _buildHealthCard(
-                          context, 'BMI', 'assets/images/bmi.png', () {}),
+                      _buildHealthCard(context, 'BMI', 'assets/images/bmi.png',
+                          () {
+                        Navigator.pushNamed(context, '/bmi');
+                      }),
                       _buildHealthCard(
                           context, 'Uống nước', 'assets/images/water.png', () {
                         Navigator.pushNamed(context, '/water');
