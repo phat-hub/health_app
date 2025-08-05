@@ -3,6 +3,7 @@ export 'service/heart_rate_camera_service.dart';
 export 'service/heart_rate_service.dart';
 export 'service/step_service.dart';
 export 'service/sleep_service.dart';
+export 'service/water_service.dart';
 
 export 'model/heart_rate_record.dart';
 export 'model/sleep_record.dart';
@@ -13,6 +14,7 @@ export 'manager/theme_manager.dart';
 export 'manager/heart_rate_camera_manager.dart';
 export 'manager/step_manager.dart';
 export 'manager/sleep_manager.dart';
+export 'manager/water_manager.dart';
 
 export 'ui/login_screen.dart';
 export 'ui/heart_rate_history_screen.dart';
@@ -20,5 +22,6 @@ export 'ui/heart_rate_camera_screen.dart';
 export 'ui/health_home_page.dart';
 export 'ui/step_screen.dart';
 export 'ui/sleep_screen.dart';
+export 'ui/water_screen.dart';
 
 export 'shared/app_theme.dart';
