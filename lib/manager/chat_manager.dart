@@ -40,6 +40,7 @@ class ChatManager extends ChangeNotifier {
   Future<void> sendMessage(String text) async {
     if (currentSession == null) return;
 
+    // Thêm tin nhắn của user
     currentSession!.messages.add(ChatMessage(
       sender: "user",
       text: text,
@@ -47,19 +48,38 @@ class ChatManager extends ChangeNotifier {
     ));
     notifyListeners();
 
-    final reply = await _aiService.sendMessage(text);
-
+    // Thêm tin nhắn AI typing trống
     currentSession!.messages.add(ChatMessage(
       sender: "ai",
-      text: reply,
+      text: "",
       time: DateTime.now(),
     ));
+    notifyListeners();
 
+    // Lấy phản hồi từ AI
+    String reply = await _aiService.sendMessage(text);
+
+    // Hiệu ứng typing (giảm tần suất notify)
+    String tempText = "";
+    for (int i = 0; i < reply.length; i++) {
+      tempText += reply[i];
+      currentSession!.messages.last = ChatMessage(
+        sender: "ai",
+        text: tempText,
+        time: DateTime.now(),
+      );
+
+      if (i % 3 == 0 || i == reply.length - 1) {
+        notifyListeners();
+      }
+      await Future.delayed(const Duration(milliseconds: 15));
+    }
+
+    // Lưu vào lịch sử
     if (!sessions.contains(currentSession)) {
       sessions.insert(0, currentSession!);
     }
     await saveHistory();
-    notifyListeners();
   }
 
   Future<void> deleteSession(String id) async {

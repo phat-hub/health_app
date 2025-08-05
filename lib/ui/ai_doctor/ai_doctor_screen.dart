@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../screen.dart';
 
 class AiDoctorScreen extends StatefulWidget {
@@ -74,28 +75,54 @@ class _AiDoctorScreenState extends State<AiDoctorScreen> {
                           : DateTime.now();
                       return Dismissible(
                         key: Key(session.id),
-                        direction: DismissDirection.startToEnd,
+                        direction: DismissDirection.endToStart,
                         background: Container(
-                          color: Colors.red,
+                          color: Colors.blue,
                           alignment: Alignment.centerLeft,
                           padding: const EdgeInsets.only(left: 20),
                           child: const Icon(Icons.delete, color: Colors.white),
                         ),
-                        onDismissed: (_) {
-                          chatManager.deleteSession(session.id);
+                        confirmDismiss: (direction) async {
+                          return await showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text("Xác nhận"),
+                              content: const Text(
+                                  "Bạn có chắc muốn xóa cuộc trò chuyện này?"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text("Hủy"),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                  ),
+                                  child: const Text("Xóa"),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        onDismissed: (_) async {
+                          await chatManager.deleteSession(session.id);
                         },
                         child: ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: Color(0xFF1E88E5),
-                            child:
-                                Icon(Icons.local_hospital, color: Colors.white),
+                          leading: CircleAvatar(
+                            backgroundImage: const AssetImage(
+                                "assets/images/doctor.png"), // ảnh bác sĩ
+                            radius: 24,
                           ),
                           title: Text(
                             lastMsg,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          subtitle: Text(time.toString()),
+                          subtitle: Text(
+                            DateFormat('dd/MM/yyyy HH:mm').format(time),
+                          ),
                           onTap: () {
                             chatManager.openChat(session);
                             Navigator.push(
