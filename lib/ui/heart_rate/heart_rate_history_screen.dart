@@ -41,6 +41,14 @@ class _HeartRateHistoryScreenState extends State<HeartRateHistoryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Lịch sử nhịp tim"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () {
+              Navigator.pushNamed(context, '/heartRateInfo');
+            },
+          ),
+        ],
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
       ),

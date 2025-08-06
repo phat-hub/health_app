@@ -69,6 +69,7 @@ class MyApp extends StatelessWidget {
               '/home': (context) => const HealthHomePage(),
               '/heartRateHistory': (context) => const HeartRateHistoryScreen(),
               '/heartRateCamera': (context) => const HeartRateCameraScreen(),
+              '/heartRateInfo': (context) => const HeartRateInfoScreen(),
               '/step': (context) => const StepScreen(),
               '/sleep': (context) => const SleepScreen(),
               '/sleepInfo': (context) => const SleepInfoScreen(),

@@ -82,8 +82,19 @@ class StepManager extends ChangeNotifier {
   }
 
   void _calculateMetrics() {
-    distance = steps * 0.7;
-    calories = steps * 0.035;
+    // Chiều dài bước trung bình (m) theo WHO
+    const stepLengthMeters = 0.762; // 76.2 cm
+
+    // Calories tiêu hao trung bình mỗi bước (kcal)
+    const kcalPerStep = 0.04;
+
+    // Tính khoảng cách
+    distance = steps * stepLengthMeters;
+
+    // Tính calories
+    calories = steps * kcalPerStep;
+
+    // Tính thời gian hoạt động
     activeTime = Duration(minutes: (steps / 100).round());
   }
 

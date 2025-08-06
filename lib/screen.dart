@@ -36,6 +36,7 @@ export 'manager/food_scanner_manager.dart';
 export 'ui/login_screen.dart';
 export 'ui/heart_rate/heart_rate_history_screen.dart';
 export 'ui/heart_rate/heart_rate_camera_screen.dart';
+export 'ui/heart_rate/heart_rate_info_screen.dart';
 export 'ui/health_home_page.dart';
 export 'ui/step/step_screen.dart';
 export 'ui/sleep/sleep_screen.dart';
