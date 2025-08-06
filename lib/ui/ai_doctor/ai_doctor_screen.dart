@@ -43,10 +43,7 @@ class _AiDoctorScreenState extends State<AiDoctorScreen> {
                 ElevatedButton.icon(
                   onPressed: () {
                     chatManager.startNewChat();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ChatScreen()),
-                    );
+                    Navigator.pushNamed(context, '/chat');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1E88E5),
@@ -125,11 +122,7 @@ class _AiDoctorScreenState extends State<AiDoctorScreen> {
                           ),
                           onTap: () {
                             chatManager.openChat(session);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const ChatScreen()),
-                            );
+                            Navigator.pushNamed(context, '/chat');
                           },
                         ),
                       );

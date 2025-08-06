@@ -282,7 +282,9 @@ class _HealthHomePageState extends State<HealthHomePage> {
                         Navigator.pushNamed(context, '/aiDoctor');
                       }),
                       _buildHealthCard(context, 'Máy quét thực phẩm',
-                          'assets/images/scanner.png', () {}),
+                          'assets/images/scanner.png', () {
+                        Navigator.pushNamed(context, '/foodScanner');
+                      }),
                       _buildHealthCard(
                           context, 'Bộ đếm bước', 'assets/images/steps.png',
                           () {

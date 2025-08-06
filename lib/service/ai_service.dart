@@ -2,10 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AIService {
-  // Thay bằng API key bạn lấy ở Google AI Studio
   static const String _apiKey = "AIzaSyAVk_sx4ML0daJGKRYJF1UN1-rFhpetOb0";
 
-  // Đúng model ID, không có -latest
   static const String _baseUrl =
       "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=$_apiKey";
 

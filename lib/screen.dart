@@ -8,6 +8,7 @@ export 'service/blood_pressure_service.dart';
 export 'service/blood_glucose_service.dart';
 export 'service/bmi_service.dart';
 export 'service/ai_service.dart';
+export 'service/food_scanner_service.dart';
 
 export 'model/heart_rate_record.dart';
 export 'model/sleep_record.dart';
@@ -17,6 +18,7 @@ export 'model/blood_glucose_record.dart';
 export 'model/bmi_record.dart';
 export 'model/chat_message.dart';
 export 'model/chat_session.dart';
+export 'model/food_item.dart';
 
 export 'manager/heart_rate_manager.dart';
 export 'manager/auth_manager.dart';
@@ -29,6 +31,7 @@ export 'manager/blood_pressure_manager.dart';
 export 'manager/blood_glucose_manager.dart';
 export 'manager/bmi_manager.dart';
 export 'manager/chat_manager.dart';
+export 'manager/food_scanner_manager.dart';
 
 export 'ui/login_screen.dart';
 export 'ui/heart_rate/heart_rate_history_screen.dart';
@@ -51,5 +54,6 @@ export 'ui/bmi/bmi_info_screen.dart';
 export 'ui/bmi/bmi_screen.dart';
 export 'ui/ai_doctor/ai_doctor_screen.dart';
 export 'ui/ai_doctor/chat_screen.dart';
+export 'ui/food_scanner_screen/food_scanner_screen.dart';
 
 export 'shared/app_theme.dart';

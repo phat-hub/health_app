@@ -3,7 +3,9 @@
         android:label="health_app"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:enableOnBackInvokedCallback="true">
+        android:enableOnBackInvokedCallback="true"
+        android:requestLegacyExternalStorage="true"
+        android:usesCleartextTraffic="true">
 
         <activity
             android:name=".MainActivity"
@@ -82,11 +84,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <!-- Đọc/Ghi huyết áp tâm thu -->
-    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE_SYSTOLIC"/>
-    <uses-permission android:name="android.permission.health.WRITE_BLOOD_PRESSURE_SYSTOLIC"/>
-
-    <!-- Đọc/Ghi huyết áp tâm trương -->
-    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE_DIASTOLIC"/>
-    <uses-permission android:name="android.permission.health.WRITE_BLOOD_PRESSURE_DIASTOLIC"/>
+    <!-- Android 13+ cần quyền này thay cho READ_EXTERNAL_STORAGE -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
 </manifest>
