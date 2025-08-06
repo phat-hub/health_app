@@ -52,12 +52,22 @@ class SleepInfoScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
+
           _tip(
-              "Ngủ nông (Light sleep): Chiếm 50-60% tổng thời gian ngủ, giúp cơ thể thư giãn và dễ dàng thức dậy."),
+              "Ngủ nông (Light sleep):\nChiếm khoảng 50-60% tổng thời gian ngủ. "
+              "Đây là giai đoạn cơ thể thư giãn, nhịp tim và hơi thở chậm lại, "
+              "não bắt đầu xử lý thông tin trong ngày. Ngủ nông giúp cơ thể chuyển tiếp giữa thức và các giai đoạn ngủ sâu hơn."),
+
           _tip(
-              "Ngủ sâu (Deep sleep): Chiếm 13-23%, quan trọng cho phục hồi thể chất và tăng cường miễn dịch."),
+              "Ngủ sâu (Deep sleep / Slow-wave sleep):\nChiếm khoảng 13-23% tổng thời gian ngủ. "
+              "Đây là giai đoạn phục hồi thể chất mạnh mẽ nhất: cơ bắp được sửa chữa, "
+              "hệ miễn dịch tăng cường, hormone tăng trưởng được tiết ra. "
+              "Ngủ sâu giúp bạn thức dậy cảm thấy khoẻ khoắn."),
+
           _tip(
-              "Ngủ REM: Chiếm 20-25%, quan trọng cho trí nhớ, học tập và xử lý cảm xúc."),
+              "Ngủ REM (Rapid Eye Movement):\nChiếm khoảng 20-25% tổng thời gian ngủ. "
+              "Giai đoạn này đặc trưng bởi chuyển động mắt nhanh, hoạt động não mạnh mẽ, "
+              "giấc mơ thường xảy ra trong REM. Đây là lúc não bộ xử lý ký ức, học tập và điều chỉnh cảm xúc."),
 
           const SizedBox(height: 20),
 
@@ -89,15 +99,15 @@ class SleepInfoScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _tip(
-              "1. Thời lượng ngủ: 7-9 giờ đạt điểm tối đa (40 điểm). Nếu 5-7 giờ sẽ ít điểm hơn, dưới 5 giờ sẽ rất thấp."),
+              "1. **Thời lượng ngủ**: 7-9 giờ đạt điểm tối đa (40 điểm). Nếu 5-7 giờ sẽ ít điểm hơn, dưới 5 giờ sẽ rất thấp."),
           _tip(
-              "2. Tỉ lệ ngủ REM: 15-25% tổng thời gian ngủ đạt điểm tối đa (20 điểm). Ngoài khoảng này điểm giảm."),
+              "2. **Tỉ lệ ngủ REM**: 15-25% tổng thời gian ngủ đạt điểm tối đa (20 điểm). Ngoài khoảng này điểm giảm."),
           _tip(
-              "3. Tỉ lệ ngủ sâu (Deep sleep): 13-23% đạt điểm tối đa (20 điểm)."),
+              "3. **Tỉ lệ ngủ sâu (Deep sleep)**: 13-23% đạt điểm tối đa (20 điểm)."),
           _tip(
-              "4. Số lần thức giấc trong đêm: ≤ 10 lần đạt 20 điểm, 11-20 lần đạt 10 điểm, nhiều hơn sẽ mất điểm."),
+              "4. **Số lần thức giấc trong đêm**: ≤ 10 lần đạt 20 điểm, 11-20 lần đạt 10 điểm, nhiều hơn sẽ mất điểm."),
           _tip(
-              "Tổng điểm tối đa: 100 điểm.\n\n• 80-100 điểm: Giấc ngủ Tốt \n• 60-79 điểm: Giấc ngủ Vừa phải \n• Dưới 60 điểm: Giấc ngủ Kém "),
+              "Tổng điểm tối đa: 100 điểm.\n\n• 80-100 điểm: Giấc ngủ **Tốt** 🟢\n• 60-79 điểm: Giấc ngủ **Vừa phải** 🟠\n• Dưới 60 điểm: Giấc ngủ **Kém** 🔴"),
 
           const SizedBox(height: 20),
 
