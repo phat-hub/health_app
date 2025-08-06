@@ -97,4 +97,9 @@ class SleepManager extends ChangeNotifier {
     if (score >= 60) return Colors.orange;
     return Colors.red;
   }
+
+  Future<Map<DateTime, SleepRecord>> getSleepRecordsInRange(
+      DateTime start, DateTime end) async {
+    return await _service.getSleepDataInRange(start, end);
+  }
 }

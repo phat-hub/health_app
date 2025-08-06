@@ -96,6 +96,12 @@ class _SleepScreenState extends State<SleepScreen> {
               Navigator.pushNamed(context, '/sleepInfo');
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.pie_chart),
+            onPressed: () {
+              Navigator.pushNamed(context, '/sleepStats');
+            },
+          ),
         ],
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,

@@ -72,6 +72,7 @@ class MyApp extends StatelessWidget {
               '/step': (context) => const StepScreen(),
               '/sleep': (context) => const SleepScreen(),
               '/sleepInfo': (context) => const SleepInfoScreen(),
+              '/sleepStats': (context) => const SleepStatsScreen(),
               '/water': (context) => const WaterScreen(),
               '/waterStats': (context) => const WaterStatsScreen(),
               '/waterReminder': (context) => const WaterReminderScreen(),
