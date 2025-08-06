@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../screen.dart';
 
 class SleepManager extends ChangeNotifier {
@@ -43,47 +42,42 @@ class SleepManager extends ChangeNotifier {
     return "${d.inHours}g ${d.inMinutes % 60}p";
   }
 
-  double get remPercent {
-    if (sleepData == null || sleepData!.total.inMinutes == 0) return 0;
-    final totalKnown = sleepData!.rem + sleepData!.light + sleepData!.deep;
-    if (totalKnown.inMinutes == 0) return 0;
-    return (sleepData!.rem.inMinutes / totalKnown.inMinutes) * 100;
-  }
-
-  double get lightPercent {
-    if (sleepData == null || sleepData!.total.inMinutes == 0) return 0;
-    final totalKnown = sleepData!.rem + sleepData!.light + sleepData!.deep;
-    if (totalKnown.inMinutes == 0) return 0;
-    return (sleepData!.light.inMinutes / totalKnown.inMinutes) * 100;
-  }
-
-  double get deepPercent {
-    if (sleepData == null || sleepData!.total.inMinutes == 0) return 0;
-    final totalKnown = sleepData!.rem + sleepData!.light + sleepData!.deep;
-    if (totalKnown.inMinutes == 0) return 0;
-    return (sleepData!.deep.inMinutes / totalKnown.inMinutes) * 100;
-  }
-
+  /// Tính điểm giấc ngủ theo chuẩn y tế
   double get recoveryScore {
     if (sleepData == null) return 0;
     double score = 0;
 
+    // Tổng thời gian ngủ (giờ)
     final totalHours =
         sleepData!.total.inHours + sleepData!.total.inMinutes % 60 / 60;
+
+    // 1. Thời lượng ngủ
     if (totalHours >= 7 && totalHours <= 9) {
-      score += 40; // thời gian ngủ hợp lý
-    } else if (totalHours >= 5) {
+      score += 40; // chuẩn y tế
+    } else if (totalHours >= 6) {
       score += 25;
     } else {
       score += 10;
     }
 
-    if (remPercent >= 15 && remPercent <= 25) score += 20;
-    if (deepPercent >= 13 && deepPercent <= 23) score += 20;
-
-    if (sleepData!.awakeCount <= 10) {
+    // 2. Giấc ngủ sâu (Deep Sleep)
+    if (sleepData!.deep.inMinutes >= 60 && sleepData!.deep.inMinutes <= 110) {
       score += 20;
-    } else if (sleepData!.awakeCount <= 20) {
+    } else if (sleepData!.deep.inMinutes >= 40) {
+      score += 10;
+    }
+
+    // 3. Giấc ngủ REM
+    if (sleepData!.rem.inMinutes >= 80 && sleepData!.rem.inMinutes <= 110) {
+      score += 20;
+    } else if (sleepData!.rem.inMinutes >= 60) {
+      score += 10;
+    }
+
+    // 4. Số lần thức giấc
+    if (sleepData!.awakeCount <= 5) {
+      score += 20;
+    } else if (sleepData!.awakeCount <= 10) {
       score += 10;
     }
 

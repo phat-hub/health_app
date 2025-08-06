@@ -39,6 +39,7 @@ export 'ui/heart_rate/heart_rate_camera_screen.dart';
 export 'ui/health_home_page.dart';
 export 'ui/step/step_screen.dart';
 export 'ui/sleep/sleep_screen.dart';
+export 'ui/sleep/sleep_info_screen.dart';
 export 'ui/water/water_screen.dart';
 export 'ui/water/water_stats_screen.dart';
 export 'ui/water/water_reminder_screen.dart';

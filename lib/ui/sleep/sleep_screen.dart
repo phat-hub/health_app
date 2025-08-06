@@ -90,6 +90,12 @@ class _SleepScreenState extends State<SleepScreen> {
             ),
             onPressed: () => _showReminderDialog(manager),
           ),
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () {
+              Navigator.pushNamed(context, '/sleepInfo');
+            },
+          ),
         ],
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
@@ -233,23 +239,17 @@ class _SleepScreenState extends State<SleepScreen> {
       children: [
         _metricCard(
           "Ngủ REM",
-          manager.hasData
-              ? "${manager.formatDuration(data.rem)}, ${manager.remPercent.toStringAsFixed(1)}%"
-              : "0g 0p, 0%",
+          manager.hasData ? manager.formatDuration(data.rem) : "0g 0p",
           Colors.green,
         ),
         _metricCard(
           "Ngủ nông",
-          manager.hasData
-              ? "${manager.formatDuration(data.light)}, ${manager.lightPercent.toStringAsFixed(1)}%"
-              : "0g 0p, 0%",
+          manager.hasData ? manager.formatDuration(data.light) : "0g 0p",
           Colors.orange,
         ),
         _metricCard(
           "Ngủ sâu",
-          manager.hasData
-              ? "${manager.formatDuration(data.deep)}, ${manager.deepPercent.toStringAsFixed(1)}%"
-              : "0g 0p, 0%",
+          manager.hasData ? manager.formatDuration(data.deep) : "0g 0p",
           Colors.blue,
         ),
         _metricCard(
