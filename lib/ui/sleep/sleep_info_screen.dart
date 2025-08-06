@@ -52,7 +52,6 @@ class SleepInfoScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-
           _tip(
               "Ngủ nông (Light sleep):\nChiếm khoảng 50-60% tổng thời gian ngủ. "
               "Đây là giai đoạn cơ thể thư giãn, nhịp tim và hơi thở chậm lại, "
@@ -99,15 +98,15 @@ class SleepInfoScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _tip(
-              "1. **Thời lượng ngủ**: 7-9 giờ đạt điểm tối đa (40 điểm). Nếu 5-7 giờ sẽ ít điểm hơn, dưới 5 giờ sẽ rất thấp."),
+              "1. Thời lượng ngủ: 7-9 giờ đạt điểm tối đa (40 điểm). Nếu 5-7 giờ sẽ ít điểm hơn, dưới 5 giờ sẽ rất thấp."),
           _tip(
-              "2. **Tỉ lệ ngủ REM**: 15-25% tổng thời gian ngủ đạt điểm tối đa (20 điểm). Ngoài khoảng này điểm giảm."),
+              "2. Tỉ lệ ngủ REM: 15-25% tổng thời gian ngủ đạt điểm tối đa (20 điểm). Ngoài khoảng này điểm giảm."),
           _tip(
-              "3. **Tỉ lệ ngủ sâu (Deep sleep)**: 13-23% đạt điểm tối đa (20 điểm)."),
+              "3. Tỉ lệ ngủ sâu (Deep sleep): 13-23% đạt điểm tối đa (20 điểm)."),
           _tip(
-              "4. **Số lần thức giấc trong đêm**: ≤ 10 lần đạt 20 điểm, 11-20 lần đạt 10 điểm, nhiều hơn sẽ mất điểm."),
+              "4. Số lần thức giấc trong đêm: ≤ 10 lần đạt 20 điểm, 11-20 lần đạt 10 điểm, nhiều hơn sẽ mất điểm."),
           _tip(
-              "Tổng điểm tối đa: 100 điểm.\n\n• 80-100 điểm: Giấc ngủ **Tốt** 🟢\n• 60-79 điểm: Giấc ngủ **Vừa phải** 🟠\n• Dưới 60 điểm: Giấc ngủ **Kém** 🔴"),
+              "Tổng điểm tối đa: 100 điểm.\n\n• 80-100 điểm: Giấc ngủ Tốt \n• 60-79 điểm: Giấc ngủ Vừa phải \n• Dưới 60 điểm: Giấc ngủ Kém "),
 
           const SizedBox(height: 20),
 
