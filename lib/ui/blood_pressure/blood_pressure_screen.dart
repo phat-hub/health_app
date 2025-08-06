@@ -38,6 +38,12 @@ class _BloodPressureScreenState extends State<BloodPressureScreen> {
               Navigator.pushNamed(context, '/bloodPressureInfo');
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.pie_chart),
+            onPressed: () {
+              Navigator.pushNamed(context, '/bloodPressureStats');
+            },
+          ),
         ],
       ),
       body: manager.isLoading

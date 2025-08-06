@@ -92,4 +92,26 @@ class BloodPressureManager extends ChangeNotifier {
     if (sys < 180 && dia < 110) return "Tăng huyết áp độ 2";
     return "Tăng huyết áp độ 3";
   }
+
+  Future<Map<String, int>> getStatusStatistics(
+      DateTime start, DateTime end) async {
+    final recordsInRange = await _service.getRecordsInRange(start, end);
+
+    Map<String, int> stats = {
+      "Huyết áp thấp": 0,
+      "Huyết áp tối ưu": 0,
+      "Bình thường": 0,
+      "Tiền tăng huyết áp": 0,
+      "Tăng huyết áp độ 1": 0,
+      "Tăng huyết áp độ 2": 0,
+      "Tăng huyết áp độ 3": 0,
+    };
+
+    for (var rec in recordsInRange) {
+      final status = getStatus(rec);
+      stats[status] = (stats[status] ?? 0) + 1;
+    }
+
+    return stats;
+  }
 }

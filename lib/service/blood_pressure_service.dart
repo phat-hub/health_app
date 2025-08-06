@@ -56,4 +56,20 @@ class BloodPressureService {
   bool _isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
+
+  Future<List<BloodPressureRecord>> getRecordsInRange(
+      DateTime start, DateTime end) async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getStringList(BloodPressureService.storageKey) ?? [];
+
+    // Chuẩn hóa start & end
+    final startDay = DateTime(start.year, start.month, start.day);
+    final endDay = DateTime(end.year, end.month, end.day, 23, 59, 59);
+
+    return data
+        .map((item) => BloodPressureRecord.fromJson(jsonDecode(item)))
+        .where(
+            (rec) => !rec.date.isBefore(startDay) && !rec.date.isAfter(endDay))
+        .toList();
+  }
 }

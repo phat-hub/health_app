@@ -79,12 +79,17 @@ class MyApp extends StatelessWidget {
               '/bloodPressureAdd': (context) => const BloodPressureAddScreen(),
               '/bloodPressureInfo': (context) =>
                   const BloodPressureInfoScreen(),
+              '/bloodPressureStats': (context) =>
+                  const BloodPressureStatsScreen(),
               '/bloodGlucose': (context) => const BloodGlucoseScreen(),
               '/bloodGlucoseAdd': (context) => const BloodGlucoseAddScreen(),
               '/bloodGlucoseInfo': (context) => const BloodGlucoseInfoScreen(),
+              '/bloodGlucoseStats': (context) =>
+                  const BloodGlucoseStatsScreen(),
               '/bmi': (context) => const BmiScreen(),
               '/bmiAdd': (context) => const BmiAddScreen(),
               '/bmiInfo': (context) => const BmiInfoScreen(),
+              '/bmiStats': (context) => const BmiStatsScreen(),
               '/aiDoctor': (context) => const AiDoctorScreen(),
               '/chat': (context) => const ChatScreen(),
               '/foodScanner': (context) => const FoodScannerScreen(),

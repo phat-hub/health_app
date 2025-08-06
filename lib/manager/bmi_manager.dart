@@ -88,4 +88,27 @@ class BmiManager extends ChangeNotifier {
     if (bmi < 40) return "Béo phì độ II";
     return "Béo phì độ III";
   }
+
+  Future<Map<String, int>> getStatusStatistics(
+      DateTime start, DateTime end) async {
+    final recordsInRange = await _service.getRecordsInRange(start, end);
+
+    Map<String, int> stats = {
+      "Gầy độ III": 0,
+      "Gầy độ II": 0,
+      "Gầy độ I": 0,
+      "Bình thường": 0,
+      "Thừa cân": 0,
+      "Béo phì độ I": 0,
+      "Béo phì độ II": 0,
+      "Béo phì độ III": 0,
+    };
+
+    for (var rec in recordsInRange) {
+      final status = getStatus(rec.bmi);
+      stats[status] = (stats[status] ?? 0) + 1;
+    }
+
+    return stats;
+  }
 }

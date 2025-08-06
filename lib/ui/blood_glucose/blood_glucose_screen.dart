@@ -37,6 +37,12 @@ class _BloodGlucoseScreenState extends State<BloodGlucoseScreen> {
               Navigator.pushNamed(context, '/bloodGlucoseInfo');
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.pie_chart),
+            onPressed: () {
+              Navigator.pushNamed(context, '/bloodGlucoseStats');
+            },
+          ),
         ],
       ),
       body: manager.isLoading

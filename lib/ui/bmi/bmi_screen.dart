@@ -38,6 +38,12 @@ class _BmiScreenState extends State<BmiScreen> {
               Navigator.pushNamed(context, '/bmiInfo');
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.pie_chart),
+            onPressed: () {
+              Navigator.pushNamed(context, '/bmiStats');
+            },
+          ),
         ],
       ),
       body: manager.isLoading

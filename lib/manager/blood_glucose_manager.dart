@@ -94,4 +94,24 @@ class BloodGlucoseManager extends ChangeNotifier {
         return "Không xác định";
     }
   }
+
+  Future<Map<String, int>> getStatusStatistics(
+      DateTime start, DateTime end) async {
+    final recordsInRange = await _service.getRecordsInRange(start, end);
+
+    Map<String, int> stats = {
+      "Hạ đường huyết": 0,
+      "Bình thường": 0,
+      "Tiền đái tháo đường": 0,
+      "Đái tháo đường": 0,
+      "Không xác định": 0,
+    };
+
+    for (var rec in recordsInRange) {
+      final status = getGlucoseStatus(rec);
+      stats[status] = (stats[status] ?? 0) + 1;
+    }
+
+    return stats;
+  }
 }
