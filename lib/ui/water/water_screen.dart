@@ -219,10 +219,19 @@ class _WaterScreenState extends State<WaterScreen> {
           ElevatedButton(
             onPressed: () {
               final newGoal = int.tryParse(controller.text);
-              if (newGoal != null && newGoal > 0) {
+              if (newGoal != null && newGoal >= 500 && newGoal <= 5000) {
                 manager.updateGoal(newGoal);
+                Navigator.pop(context);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content:
+                        Text("Mục tiêu phải nằm trong khoảng 500 – 5000 ml"),
+                    backgroundColor: Colors.blue,
+                    duration: Duration(seconds: 3),
+                  ),
+                );
               }
-              Navigator.pop(context);
             },
             child: const Text("OK"),
           ),
@@ -249,10 +258,19 @@ class _WaterScreenState extends State<WaterScreen> {
           ElevatedButton(
             onPressed: () {
               final newSize = int.tryParse(controller.text);
-              if (newSize != null && newSize > 0) {
+              if (newSize != null && newSize >= 50 && newSize <= 1000) {
                 manager.updateCupSize(newSize);
+                Navigator.pop(context);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                        "Kích thước ly/chai phải nằm trong khoảng 50 – 1000 ml"),
+                    backgroundColor: Colors.blue,
+                    duration: Duration(seconds: 3),
+                  ),
+                );
               }
-              Navigator.pop(context);
             },
             child: const Text("OK"),
           ),

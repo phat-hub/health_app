@@ -165,18 +165,34 @@ class _StepScreenState extends State<StepScreen> {
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            hintText: "Nhập số bước",
+          ),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Hủy")),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Hủy"),
+          ),
           ElevatedButton(
             onPressed: () {
               final newGoal = int.tryParse(controller.text);
-              if (newGoal != null && newGoal > 0) {
+
+              // Kiểm tra giới hạn hợp lệ
+              if (newGoal != null && newGoal >= 1000 && newGoal <= 50000) {
                 manager.updateGoal(newGoal);
+                Navigator.pop(context);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Mục tiêu phải từ 1.000 đến 50.000 bước/ngày",
+                    ),
+                    backgroundColor: Colors.blue,
+                    duration: Duration(seconds: 3),
+                  ),
+                );
               }
-              Navigator.pop(context);
             },
             child: const Text("OK"),
           )

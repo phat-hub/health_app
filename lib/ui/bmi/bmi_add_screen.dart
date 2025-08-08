@@ -99,15 +99,23 @@ class _BmiAddScreenState extends State<BmiAddScreen> {
                   final h = double.tryParse(_heightController.text) ?? 0;
                   final w = double.tryParse(_weightController.text) ?? 0;
 
-                  if (h > 0 && w > 0) {
+                  // Giới hạn hợp lệ
+                  final isValid = h >= 50 && h <= 300 && w >= 2 && w <= 500;
+
+                  if (isValid) {
                     await manager.saveRecord(h, w);
                     Navigator.pop(context);
                   } else {
+                    String errorMessage = "Giá trị nhập không hợp lệ.\n"
+                        "- Chiều cao: 50 – 300 cm\n"
+                        "- Cân nặng: 2 – 500 kg\n"
+                        "Vui lòng kiểm tra lại trước khi lưu.";
+
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content:
-                            Text("Vui lòng nhập đầy đủ và chính xác giá trị"),
-                        backgroundColor: Colors.red,
+                      SnackBar(
+                        content: Text(errorMessage),
+                        backgroundColor: Colors.blue,
+                        duration: const Duration(seconds: 4),
                       ),
                     );
                   }

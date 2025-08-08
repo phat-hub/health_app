@@ -146,15 +146,23 @@ class _BloodGlucoseAddScreenState extends State<BloodGlucoseAddScreen> {
               child: ElevatedButton(
                 onPressed: () async {
                   final g = double.tryParse(_glucoseController.text) ?? 0;
-                  if (g > 0) {
+
+                  // Phạm vi hợp lệ cho mmol/L
+                  final isValid = g >= 2.0 && g <= 33.3;
+
+                  if (isValid) {
                     await manager.saveRecord(g, measurementType);
                     Navigator.pop(context);
                   } else {
+                    String errorMessage = "Giá trị đường huyết không hợp lệ.\n"
+                        "- Phạm vi chấp nhận: 2.0 – 33.3 mmol/L\n"
+                        "- Nếu ngoài khoảng này, vui lòng kiểm tra lại kết quả đo.";
+
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            "Vui lòng nhập đầy đủ và chính xác giá trị đường huyết"),
-                        backgroundColor: Colors.red,
+                      SnackBar(
+                        content: Text(errorMessage),
+                        backgroundColor: Colors.blue,
+                        duration: const Duration(seconds: 4),
                       ),
                     );
                   }

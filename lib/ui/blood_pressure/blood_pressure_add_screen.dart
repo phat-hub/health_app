@@ -105,15 +105,27 @@ class _BloodPressureAddScreenState extends State<BloodPressureAddScreen> {
                   final dia = int.tryParse(_diaController.text) ?? 0;
                   final pulse = int.tryParse(_pulseController.text) ?? 0;
 
-                  if (sys > 0 && dia > 0 && pulse > 0) {
+                  final isValid = sys >= 50 &&
+                      sys <= 250 &&
+                      dia >= 30 &&
+                      dia <= 150 &&
+                      pulse >= 30 &&
+                      pulse <= 220;
+
+                  if (isValid) {
                     await manager.saveRecord(sys, dia, pulse);
                     Navigator.pop(context);
                   } else {
+                    String errorMessage = "Giá trị nhập không hợp lệ.\n";
+                    errorMessage += "- Tâm thu: 50 – 250 mmHg\n"
+                        "- Tâm trương: 30 – 150 mmHg\n"
+                        "- Nhịp tim: 30 – 220 bpm";
+
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            "Vui lòng nhập đầy đủ và chính xác các giá trị"),
-                        backgroundColor: Colors.red,
+                      SnackBar(
+                        content: Text(errorMessage),
+                        backgroundColor: Colors.blue,
+                        duration: const Duration(seconds: 4),
                       ),
                     );
                   }
