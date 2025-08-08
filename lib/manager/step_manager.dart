@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../screen.dart';
 
 class StepManager extends ChangeNotifier {
@@ -10,7 +9,7 @@ class StepManager extends ChangeNotifier {
   bool _isLoading = false;
   bool hasHealthData = false;
   int steps = 0;
-  int goal = 6000; // mặc định
+  int goal = 6000;
   double calories = 0;
   double distance = 0;
   Duration activeTime = Duration.zero;
@@ -18,10 +17,10 @@ class StepManager extends ChangeNotifier {
   DateTime selectedDate = DateTime.now();
   Timer? _pollingTimer;
 
-  Map<DateTime, int> stepStats = {};
+  List<StepRecord> stepRecords = [];
 
   StepManager() {
-    _loadGoalFromPrefs(); // <-- đọc goal ngay khi tạo object
+    _loadGoalFromPrefs();
   }
 
   bool get isLoading => _isLoading;
@@ -69,7 +68,7 @@ class StepManager extends ChangeNotifier {
     goal = newGoal;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('daily_goal', goal); // lưu lại
+    await prefs.setInt('daily_goal', goal);
   }
 
   Future<void> _loadGoalFromPrefs() async {
@@ -82,24 +81,16 @@ class StepManager extends ChangeNotifier {
   }
 
   void _calculateMetrics() {
-    // Chiều dài bước trung bình (m) theo WHO
-    const stepLengthMeters = 0.762; // 76.2 cm
-
-    // Calories tiêu hao trung bình mỗi bước (kcal)
+    const stepLengthMeters = 0.762;
     const kcalPerStep = 0.04;
 
-    // Tính khoảng cách
     distance = steps * stepLengthMeters;
-
-    // Tính calories
     calories = steps * kcalPerStep;
-
-    // Tính thời gian hoạt động
     activeTime = Duration(minutes: (steps / 100).round());
   }
 
   Future<void> loadStepStats() async {
-    stepStats = await _service.getStepStatsLast30Days();
+    stepRecords = await _service.getStepRecordsLast30Days();
     notifyListeners();
   }
 

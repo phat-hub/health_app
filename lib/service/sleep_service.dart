@@ -8,6 +8,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 import 'package:android_intent_plus/android_intent.dart';
+import 'dart:convert';
 
 import '../screen.dart';
 
@@ -15,6 +16,8 @@ class SleepService {
   final Health _health = Health();
   final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
+
+  static const _sleepReminderKey = 'sleepReminder';
 
   Future<SleepRecord?> getSleepDataForDate(DateTime date) async {
     await Permission.activityRecognition.request();
@@ -84,51 +87,42 @@ class SleepService {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const settings = InitializationSettings(android: android);
     await _notifications.initialize(settings);
-
     await requestNotificationPermission();
   }
 
-  Future<void> setSleepReminder(bool enabled, {TimeOfDay? time}) async {
+  Future<ReminderTime?> getReminder() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setBool('sleepReminderEnabled', enabled);
+    final jsonStr = prefs.getString(_sleepReminderKey);
+    if (jsonStr == null) return null;
+    return ReminderTime.fromJson(json.decode(jsonStr));
+  }
 
-    if (enabled && time != null) {
+  Future<void> setReminder(ReminderTime reminder) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_sleepReminderKey, json.encode(reminder.toJson()));
+
+    if (reminder.enabled) {
       bool granted = await requestExactAlarmPermission();
       if (!granted) {
         debugPrint("⚠ Quyền exact alarm chưa được bật → không thể đặt lịch.");
         return;
       }
-      prefs.setInt('sleepReminderHour', time.hour);
-      prefs.setInt('sleepReminderMinute', time.minute);
-      await scheduleReminder(time);
+      await scheduleReminder(reminder);
+      await showTestNotification();
     } else {
       await cancelReminder();
     }
   }
 
-  Future<bool> isReminderEnabled() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('sleepReminderEnabled') ?? false;
-  }
-
-  Future<TimeOfDay?> getReminderTime() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!(prefs.getBool('sleepReminderEnabled') ?? false)) return null;
-    final h = prefs.getInt('sleepReminderHour');
-    final m = prefs.getInt('sleepReminderMinute');
-    if (h == null || m == null) return null;
-    return TimeOfDay(hour: h, minute: m);
-  }
-
-  Future<void> scheduleReminder(TimeOfDay time) async {
+  Future<void> scheduleReminder(ReminderTime reminder) async {
     final now = tz.TZDateTime.now(tz.local);
     tz.TZDateTime scheduled = tz.TZDateTime(
       tz.local,
       now.year,
       now.month,
       now.day,
-      time.hour,
-      time.minute,
+      reminder.hour,
+      reminder.minute,
     );
 
     if (scheduled.isBefore(now)) {
@@ -167,7 +161,6 @@ class SleepService {
     }
   }
 
-  /// Yêu cầu quyền exact alarm (Mở thẳng trang "Báo thức & lời nhắc")
   Future<bool> requestExactAlarmPermission() async {
     if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
@@ -187,6 +180,25 @@ class SleepService {
       }
     }
     return true;
+  }
+
+  Future<void> showTestNotification() async {
+    await _notifications.show(
+      999, // ID khác để không đè thông báo khác
+      '📢 Test nhắc nhở ngủ',
+      'Thông báo test này hiển thị ngay lập tức',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'test_channel',
+          'Kênh Test',
+          importance: Importance.max,
+          priority: Priority.high,
+          visibility: NotificationVisibility.public,
+        ),
+      ),
+    );
+
+    debugPrint("🛑 Test notification đã gửi ngay lập tức");
   }
 
   Future<Map<DateTime, SleepRecord>> getSleepDataInRange(

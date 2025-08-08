@@ -8,22 +8,19 @@ class SleepManager extends ChangeNotifier {
   bool isLoading = false;
   DateTime selectedDate = DateTime.now();
 
-  bool reminderEnabled = false;
-  TimeOfDay? reminderTime;
+  ReminderTime reminder = ReminderTime(hour: 22, minute: 0, enabled: false);
 
   bool get hasData => sleepData != null && sleepData!.total.inMinutes > 0;
 
   Future<void> init() async {
     await _service.initNotifications();
-    reminderEnabled = await _service.isReminderEnabled();
-    reminderTime = await _service.getReminderTime();
+    reminder = await _service.getReminder() ?? reminder;
     notifyListeners();
   }
 
-  Future<void> toggleReminder(bool enabled, {TimeOfDay? time}) async {
-    reminderEnabled = enabled;
-    reminderTime = time;
-    await _service.setSleepReminder(enabled, time: time);
+  Future<void> toggleReminder(ReminderTime newReminder) async {
+    reminder = newReminder;
+    await _service.setReminder(newReminder);
     notifyListeners();
   }
 

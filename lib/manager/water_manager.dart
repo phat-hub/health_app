@@ -19,7 +19,7 @@ class WaterManager extends ChangeNotifier {
 
   Map<DateTime, int> stats = {};
 
-  List<WaterReminderTime> reminders = [];
+  List<ReminderTime> reminders = [];
 
   WaterManager() {
     _init();
@@ -115,7 +115,7 @@ class WaterManager extends ChangeNotifier {
   }
 
   Future<void> addReminder(int hour, int minute) async {
-    reminders.add(WaterReminderTime(hour: hour, minute: minute, enabled: true));
+    reminders.add(ReminderTime(hour: hour, minute: minute, enabled: true));
     await _service.saveReminders(reminders);
     await _service.scheduleAllReminders();
     await _service.showTestNotification();

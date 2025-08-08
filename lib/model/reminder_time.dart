@@ -1,16 +1,16 @@
-class WaterReminderTime {
+class ReminderTime {
   final int hour;
   final int minute;
   final bool enabled;
 
-  WaterReminderTime({
+  ReminderTime({
     required this.hour,
     required this.minute,
     required this.enabled,
   });
 
-  WaterReminderTime copyWith({int? hour, int? minute, bool? enabled}) {
-    return WaterReminderTime(
+  ReminderTime copyWith({int? hour, int? minute, bool? enabled}) {
+    return ReminderTime(
       hour: hour ?? this.hour,
       minute: minute ?? this.minute,
       enabled: enabled ?? this.enabled,
@@ -23,8 +23,8 @@ class WaterReminderTime {
         'enabled': enabled,
       };
 
-  factory WaterReminderTime.fromJson(Map<String, dynamic> json) {
-    return WaterReminderTime(
+  factory ReminderTime.fromJson(Map<String, dynamic> json) {
+    return ReminderTime(
       hour: json['hour'],
       minute: json['minute'],
       enabled: json['enabled'],

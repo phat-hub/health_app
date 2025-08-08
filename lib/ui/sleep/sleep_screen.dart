@@ -21,9 +21,7 @@ class _SleepScreenState extends State<SleepScreen> {
   }
 
   void _showReminderDialog(SleepManager manager) {
-    bool tempEnabled = manager.reminderEnabled;
-    TimeOfDay? tempTime =
-        manager.reminderTime ?? const TimeOfDay(hour: 22, minute: 0);
+    ReminderTime tempReminder = manager.reminder;
 
     showDialog(
       context: context,
@@ -35,22 +33,26 @@ class _SleepScreenState extends State<SleepScreen> {
             children: [
               SwitchListTile(
                 title: const Text("Bật nhắc nhở"),
-                value: tempEnabled,
+                value: tempReminder.enabled,
                 onChanged: (v) {
-                  setState(() => tempEnabled = v);
+                  setState(
+                      () => tempReminder = tempReminder.copyWith(enabled: v));
                 },
               ),
-              if (tempEnabled)
+              if (tempReminder.enabled)
                 ListTile(
-                  title: Text("Giờ nhắc: ${tempTime!.format(context)}"),
+                  title: Text(
+                      "Giờ nhắc: ${TimeOfDay(hour: tempReminder.hour, minute: tempReminder.minute).format(context)}"),
                   trailing: const Icon(Icons.access_time),
                   onTap: () async {
                     final picked = await showTimePicker(
                       context: context,
-                      initialTime: tempTime!,
+                      initialTime: TimeOfDay(
+                          hour: tempReminder.hour, minute: tempReminder.minute),
                     );
                     if (picked != null) {
-                      setState(() => tempTime = picked);
+                      setState(() => tempReminder = tempReminder.copyWith(
+                          hour: picked.hour, minute: picked.minute));
                     }
                   },
                 ),
@@ -64,7 +66,7 @@ class _SleepScreenState extends State<SleepScreen> {
             ElevatedButton(
               child: const Text("Lưu"),
               onPressed: () async {
-                await manager.toggleReminder(tempEnabled, time: tempTime);
+                await manager.toggleReminder(tempReminder);
                 Navigator.pop(context);
               },
             ),
@@ -86,7 +88,7 @@ class _SleepScreenState extends State<SleepScreen> {
           IconButton(
             icon: Icon(
               Icons.notifications_active,
-              color: manager.reminderEnabled ? Colors.yellow : Colors.white,
+              color: manager.reminder.enabled ? Colors.yellow : Colors.white,
             ),
             onPressed: () => _showReminderDialog(manager),
           ),

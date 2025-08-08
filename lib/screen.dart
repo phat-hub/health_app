@@ -12,12 +12,14 @@ export 'service/food_scanner_service.dart';
 
 export 'model/heart_rate_record.dart';
 export 'model/sleep_record.dart';
-export 'model/water_reminder_time.dart';
+export 'model/reminder_time.dart';
 export 'model/blood_pressure_record.dart';
 export 'model/blood_glucose_record.dart';
 export 'model/bmi_record.dart';
 export 'model/chat_message.dart';
 export 'model/chat_session.dart';
+export 'model/step_record.dart';
+export 'model/water_record.dart';
 export 'model/food_item.dart';
 
 export 'manager/heart_rate_manager.dart';

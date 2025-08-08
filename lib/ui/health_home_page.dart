@@ -52,98 +52,14 @@ class _HealthHomePageState extends State<HealthHomePage> {
                           color: theme.colorScheme.primary,
                         ),
                       ),
-                      Consumer<AuthManager>(
-                        builder: (context, authManager, _) {
-                          final displayName =
-                              authManager.userName ?? 'Người dùng';
-                          final photoUrl = authManager.photoURL;
-
-                          return PopupMenuButton<int>(
-                            offset: const Offset(0, 48),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                            color: theme.colorScheme.surface,
-                            elevation: 4,
-                            onSelected: (value) async {
-                              if (value == 1) {
-                                await Provider.of<AuthManager>(context,
-                                        listen: false)
-                                    .signOut();
-                                Navigator.pushReplacementNamed(
-                                    context, '/login');
-                              } else if (value == 2) {
-                                Provider.of<ThemeManager>(context,
-                                        listen: false)
-                                    .toggleTheme();
-                              }
-                            },
-                            itemBuilder: (context) => [
-                              PopupMenuItem<int>(
-                                value: 2,
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      isDark
-                                          ? Icons.light_mode
-                                          : Icons.dark_mode,
-                                      color: theme.colorScheme.secondary,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      isDark ? 'Chế độ sáng' : 'Chế độ tối',
-                                      style:
-                                          theme.textTheme.bodyMedium?.copyWith(
-                                        color: theme.colorScheme.primary,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const PopupMenuDivider(),
-                              PopupMenuItem<int>(
-                                value: 1,
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.logout,
-                                        color: theme.colorScheme.primary),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      'Đăng xuất',
-                                      style:
-                                          theme.textTheme.bodyMedium?.copyWith(
-                                        color: theme.colorScheme.primary,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 18,
-                                  backgroundImage: photoUrl != null
-                                      ? NetworkImage(photoUrl)
-                                      : null,
-                                  backgroundColor: Colors.grey[300],
-                                  child: photoUrl == null
-                                      ? const Icon(Icons.person, size: 18)
-                                      : null,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  displayName,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w500,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                                const Icon(Icons.arrow_drop_down),
-                              ],
-                            ),
-                          );
+                      IconButton(
+                        icon: Icon(
+                          isDark ? Icons.light_mode : Icons.dark_mode,
+                          color: theme.colorScheme.secondary,
+                        ),
+                        onPressed: () {
+                          Provider.of<ThemeManager>(context, listen: false)
+                              .toggleTheme();
                         },
                       ),
                     ],

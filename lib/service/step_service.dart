@@ -3,11 +3,12 @@ import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pedometer/pedometer.dart';
 
+import '../screen.dart';
+
 class StepService {
   final Health _health = Health();
   StreamSubscription<StepCount>? _pedometerSubscription;
 
-  /// Lấy số bước từ Health Connect cho 1 ngày cụ thể
   Future<int?> getStepsForDate(DateTime date) async {
     await Permission.activityRecognition.request();
     await _health.configure();
@@ -42,7 +43,6 @@ class StepService {
     return totalSteps > 0 ? totalSteps : null;
   }
 
-  /// Ghi số bước vào Health Connect
   Future<bool> writeStepsToHealthConnect(int steps) async {
     await Permission.activityRecognition.request();
     await _health.configure();
@@ -57,7 +57,6 @@ class StepService {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    // Ghi dữ liệu số bước cho hôm nay
     return await _health.writeHealthData(
       value: steps.toDouble(),
       unit: HealthDataUnit.COUNT,
@@ -67,7 +66,6 @@ class StepService {
     );
   }
 
-  /// Lắng nghe số bước từ Pedometer
   void listenPedometer(Function(int) onStepChanged) {
     _pedometerSubscription = Pedometer.stepCountStream.listen(
       (StepCount event) {
@@ -84,21 +82,19 @@ class StepService {
     _pedometerSubscription?.cancel();
   }
 
-  Future<Map<DateTime, int>> getStepStatsLast30Days() async {
-    final Map<DateTime, int> stats = {};
+  /// Lấy danh sách StepRecord cho 30 ngày gần nhất
+  Future<List<StepRecord>> getStepRecordsLast30Days() async {
+    final List<StepRecord> records = [];
     final now = DateTime.now();
 
-    // Lấy 30 ngày gần nhất, bao gồm hôm nay
     for (int i = 0; i < 30; i++) {
       final date = now.subtract(Duration(days: i));
       final steps = await getStepsForDate(date) ?? 0;
-      stats[DateTime(date.year, date.month, date.day)] = steps;
+      records.add(StepRecord.fromSteps(date, steps));
     }
 
     // Sắp xếp từ cũ → mới
-    final sortedKeys = stats.keys.toList()..sort();
-    return {
-      for (var k in sortedKeys) k: stats[k]!,
-    };
+    records.sort((a, b) => a.date.compareTo(b.date));
+    return records;
   }
 }

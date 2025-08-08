@@ -126,15 +126,15 @@ class WaterService {
     }
   }
 
-  Future<List<WaterReminderTime>> getReminders() async {
+  Future<List<ReminderTime>> getReminders() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonStr = prefs.getString(_prefsKey);
     if (jsonStr == null) return [];
     final list = jsonDecode(jsonStr) as List;
-    return list.map((e) => WaterReminderTime.fromJson(e)).toList();
+    return list.map((e) => ReminderTime.fromJson(e)).toList();
   }
 
-  Future<void> saveReminders(List<WaterReminderTime> reminders) async {
+  Future<void> saveReminders(List<ReminderTime> reminders) async {
     final prefs = await SharedPreferences.getInstance();
     final jsonStr = jsonEncode(reminders.map((e) => e.toJson()).toList());
     await prefs.setString(_prefsKey, jsonStr);
@@ -151,7 +151,7 @@ class WaterService {
     }
   }
 
-  Future<void> _scheduleReminder(WaterReminderTime reminder, int id) async {
+  Future<void> _scheduleReminder(ReminderTime reminder, int id) async {
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(
       tz.local,
