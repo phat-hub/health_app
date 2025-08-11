@@ -15,7 +15,7 @@ class WaterManager extends ChangeNotifier {
   DateTime selectedDate = DateTime.now();
   DateTime firstOpenDate = DateTime.now();
 
-  List<int> _drinkHistory = [];
+  List<WaterRecord> _drinkHistory = [];
 
   Map<DateTime, int> stats = {};
 
@@ -57,18 +57,18 @@ class WaterManager extends ChangeNotifier {
   }
 
   void _recalculate() {
-    totalDrank = _drinkHistory.fold(0, (sum, e) => sum + e);
+    totalDrank = _drinkHistory.fold(0, (sum, e) => sum + e.amount);
     cupCount = _drinkHistory.length;
-    lastDrink = cupCount > 0 ? _drinkHistory.last : 0;
+    lastDrink = cupCount > 0 ? _drinkHistory.last.amount : 0;
     hasData = totalDrank > 0;
   }
 
   Future<void> addDrink(int ml) async {
     if (!_isToday()) return;
-    _drinkHistory.add(ml);
+    _drinkHistory.add(WaterRecord(amount: ml, time: DateTime.now()));
     await _service.saveDrinkHistory(selectedDate, _drinkHistory);
     _recalculate();
-    await loadStats(); // Cập nhật thống kê luôn
+    await loadStats();
     notifyListeners();
   }
 

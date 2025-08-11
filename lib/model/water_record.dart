@@ -1,5 +1,5 @@
 class WaterRecord {
-  final int amount; // ml
+  final int amount;
   final DateTime time;
 
   WaterRecord({
@@ -7,10 +7,12 @@ class WaterRecord {
     required this.time,
   });
 
-  Map<String, dynamic> toJson() => {
-        'amount': amount,
-        'time': time.toIso8601String(),
-      };
+  Map<String, dynamic> toJson() {
+    return {
+      'amount': amount,
+      'time': time.toIso8601String(),
+    };
+  }
 
   factory WaterRecord.fromJson(Map<String, dynamic> json) {
     return WaterRecord(

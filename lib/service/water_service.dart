@@ -21,18 +21,33 @@ class WaterService {
     return 'water_history_${year}-${month}-${day}';
   }
 
-  Future<List<int>> getDrinkHistory(DateTime date) async {
+  Future<List<WaterRecord>> getDrinkHistory(DateTime date) async {
     final prefs = await SharedPreferences.getInstance();
     final data = prefs.getString(_getHistoryKey(date));
+
     if (data != null) {
-      return List<int>.from(jsonDecode(data));
+      final decoded = jsonDecode(data);
+      if (decoded is List) {
+        // Nếu là dữ liệu cũ dạng int
+        if (decoded.isNotEmpty && decoded.first is int) {
+          return decoded
+              .map((e) => WaterRecord(amount: e, time: date))
+              .toList();
+        }
+        // Nếu là dữ liệu mới dạng map
+        return decoded
+            .map((e) => WaterRecord.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
     }
     return [];
   }
 
-  Future<void> saveDrinkHistory(DateTime date, List<int> history) async {
+  Future<void> saveDrinkHistory(
+      DateTime date, List<WaterRecord> history) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_getHistoryKey(date), jsonEncode(history));
+    final jsonList = history.map((e) => e.toJson()).toList();
+    await prefs.setString(_getHistoryKey(date), jsonEncode(jsonList));
   }
 
   /// Ngày mở app lần đầu
@@ -80,7 +95,6 @@ class WaterService {
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
 
-    // Số ngày cần lấy: từ ngày mở đầu tiên hoặc tối đa 30 ngày gần nhất
     int daysDiff = now.difference(firstOpenDate).inDays + 1;
     int daysToFetch = daysDiff > 30 ? 30 : daysDiff;
 
@@ -90,14 +104,24 @@ class WaterService {
       final date = now.subtract(Duration(days: i));
       final data = prefs.getString(_getHistoryKey(date));
       int total = 0;
+
       if (data != null) {
-        List<int> history = List<int>.from(jsonDecode(data));
-        total = history.fold(0, (sum, e) => sum + e);
+        final decoded = jsonDecode(data);
+        if (decoded is List) {
+          if (decoded.isNotEmpty && decoded.first is int) {
+            total = decoded.fold(0, (sum, e) => sum + e as int);
+          } else {
+            total = decoded.fold(
+                0,
+                (sum, e) =>
+                    sum +
+                    WaterRecord.fromJson(Map<String, dynamic>.from(e)).amount);
+          }
+        }
       }
       stats[DateTime(date.year, date.month, date.day)] = total;
     }
 
-    // Đảo ngược thứ tự để từ cũ -> mới
     final sortedKeys = stats.keys.toList()..sort();
     Map<DateTime, int> sortedStats = {
       for (var key in sortedKeys) key: stats[key]!,
