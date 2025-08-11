@@ -58,6 +58,7 @@ dependencies:
   http: ^1.4.0
   image_picker: ^1.1.2
   google_mlkit_image_labeling: ^0.14.1
+  flutter_native_splash: ^2.4.6
 
 dev_dependencies:
   flutter_test:
@@ -83,6 +84,11 @@ flutter:
   assets:
     - assets/animations/heart-beat.json
     - assets/images/
+
+flutter_native_splash:
+  color: "#ffffff" 
+  image: assets/images/logo.png # Đường dẫn logo cho màn hình khởi động
+  android: true
 
   # To add assets to your application, add an assets section, like this:
   # assets:

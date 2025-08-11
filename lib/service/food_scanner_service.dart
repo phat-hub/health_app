@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../screen.dart';
@@ -37,21 +36,55 @@ class FoodScannerService {
     return null;
   }
 
-  /// Nhận diện thực phẩm bằng ML Kit
+  /// Nhận diện thực phẩm bằng Google Cloud Vision API
   Future<String?> detectFoodName(File image) async {
-    final options = ImageLabelerOptions(
-      confidenceThreshold: 0.6,
+    final apiKey = "AIzaSyDM7IsYy0xPUJTQXuzQUDB7pN6rER4Wnb0";
+    final url = Uri.parse(
+        "https://vision.googleapis.com/v1/images:annotate?key=$apiKey");
+
+    // Đọc file ảnh và encode base64
+    final bytes = await image.readAsBytes();
+    final base64Image = base64Encode(bytes);
+
+    // Request body
+    final body = jsonEncode({
+      "requests": [
+        {
+          "image": {"content": base64Image},
+          "features": [
+            {"type": "LABEL_DETECTION", "maxResults": 5}
+          ]
+        }
+      ]
+    });
+
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: body,
     );
-    final imageLabeler = ImageLabeler(options: options);
 
-    final inputImage = InputImage.fromFile(image);
-    final labels = await imageLabeler.processImage(inputImage);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final labels = data["responses"]?[0]?["labelAnnotations"];
+      if (labels != null && labels.isNotEmpty) {
+        final possibleLabels = labels
+            .map((label) => label["description"].toString().toLowerCase())
+            .toList();
 
-    await imageLabeler.close();
+        // Ưu tiên tên chi tiết
+        final detailed = possibleLabels.firstWhere(
+          (l) => l != "fruit" && l != "food" && l != "plant",
+          orElse: () => possibleLabels.first,
+        );
 
-    if (labels.isNotEmpty) {
-      return labels.first.label;
+        return detailed;
+      }
+    } else {
+      throw Exception(
+          "Lỗi Vision API: ${response.statusCode} - ${response.body}");
     }
+
     return null;
   }
 
@@ -73,6 +106,21 @@ class FoodScannerService {
         );
       }
     }
+    return null;
+  }
+
+  /// Mở thư viện ảnh
+  Future<File?> pickImageFromGallery() async {
+    var photoStatus = await Permission.photos.status;
+    if (!photoStatus.isGranted) {
+      photoStatus = await Permission.photos.request();
+    }
+    if (!photoStatus.isGranted) {
+      throw Exception("Chưa cấp quyền truy cập thư viện ảnh");
+    }
+
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) return File(pickedFile.path);
     return null;
   }
 }

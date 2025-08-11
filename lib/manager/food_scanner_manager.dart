@@ -16,16 +16,37 @@ class FoodScannerManager extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
   /// Quét thực phẩm
-  Future<void> scanFood(BuildContext context) async {
+  Future<void> scanFoodFromCamera(BuildContext context) async {
+    _foodItem = null; // Reset trước khi quét
+    notifyListeners();
+    await _scanFood(context, fromCamera: true);
+  }
+
+  Future<void> scanFoodFromGallery(BuildContext context) async {
+    _foodItem = null; // Reset trước khi quét
+    notifyListeners();
+    await _scanFood(context, fromCamera: false);
+  }
+
+  Future<void> _scanFood(BuildContext context,
+      {required bool fromCamera}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final image = await _service.pickImageFromCamera();
+      final image = fromCamera
+          ? await _service.pickImageFromCamera()
+          : await _service.pickImageFromGallery();
+
       if (image == null) {
-        _error = "Không chọn được ảnh hoặc chưa cấp quyền camera";
+        _error = "Không chọn được ảnh hoặc chưa cấp quyền";
         _showError(context, _error!);
         _isLoading = false;
         notifyListeners();
@@ -34,7 +55,7 @@ class FoodScannerManager extends ChangeNotifier {
 
       _image = image;
 
-      final foodName = await _service.detectFoodName(image);
+      var foodName = await _service.detectFoodName(image);
       if (foodName == null) {
         _error = "Không nhận diện được thực phẩm";
         _showError(context, _error!);
@@ -45,7 +66,7 @@ class FoodScannerManager extends ChangeNotifier {
 
       final item = await _service.fetchCalories(foodName);
       if (item == null) {
-        _error = "Không tìm thấy thông tin calo cho '$foodName'";
+        _error = "Không tìm thấy thông tin calo";
         _showError(context, _error!);
       } else {
         _foodItem = item;
@@ -70,7 +91,10 @@ class FoodScannerManager extends ChangeNotifier {
   /// Hiển thị SnackBar lỗi
   void _showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.blue,
+      ),
     );
   }
 }
