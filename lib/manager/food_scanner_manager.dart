@@ -66,7 +66,7 @@ class FoodScannerManager extends ChangeNotifier {
 
       final item = await _service.fetchCalories(foodName);
       if (item == null) {
-        _error = "Không tìm thấy thông tin calo";
+        _error = "Không tìm thấy thông tin calo cho '$foodName'";
         _showError(context, _error!);
       } else {
         _foodItem = item;

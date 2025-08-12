@@ -118,7 +118,6 @@ class WaterManager extends ChangeNotifier {
     reminders.add(ReminderTime(hour: hour, minute: minute, enabled: true));
     await _service.saveReminders(reminders);
     await _service.scheduleAllReminders();
-    await _service.showTestNotification();
     notifyListeners();
   }
 

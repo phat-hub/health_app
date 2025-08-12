@@ -9,6 +9,7 @@ class StepService {
   final Health _health = Health();
   StreamSubscription<StepCount>? _pedometerSubscription;
 
+  /// Lấy bước từ Health Connect
   Future<int?> getStepsForDate(DateTime date) async {
     await Permission.activityRecognition.request();
     await _health.configure();
@@ -43,6 +44,7 @@ class StepService {
     return totalSteps > 0 ? totalSteps : null;
   }
 
+  /// Ghi bước chân vào Health Connect
   Future<bool> writeStepsToHealthConnect(int steps) async {
     await Permission.activityRecognition.request();
     await _health.configure();
@@ -66,6 +68,32 @@ class StepService {
     );
   }
 
+  /// Lấy tổng số bước realtime từ cảm biến pedometer trong ngày hiện tại
+  Future<int> getStepsFromPedometerToday() async {
+    // Đây là cách lấy tổng bước hiện tại từ pedometer realtime
+    Completer<int> completer = Completer<int>();
+    int lastStepCount = 0;
+
+    _pedometerSubscription = Pedometer.stepCountStream.listen(
+      (StepCount event) {
+        // Pedometer trả về tổng bước từ lúc thiết bị khởi động
+        lastStepCount = event.steps;
+        if (!completer.isCompleted) {
+          completer.complete(lastStepCount);
+        }
+      },
+      onError: (error) {
+        print("Pedometer error: $error");
+        if (!completer.isCompleted) {
+          completer.completeError(error);
+        }
+      },
+      cancelOnError: false,
+    );
+
+    return completer.future;
+  }
+
   void listenPedometer(Function(int) onStepChanged) {
     _pedometerSubscription = Pedometer.stepCountStream.listen(
       (StepCount event) {
@@ -82,7 +110,6 @@ class StepService {
     _pedometerSubscription?.cancel();
   }
 
-  /// Lấy danh sách StepRecord cho 30 ngày gần nhất
   Future<List<StepRecord>> getStepRecordsLast30Days() async {
     final List<StepRecord> records = [];
     final now = DateTime.now();
@@ -93,7 +120,6 @@ class StepService {
       records.add(StepRecord.fromSteps(date, steps));
     }
 
-    // Sắp xếp từ cũ → mới
     records.sort((a, b) => a.date.compareTo(b.date));
     return records;
   }

@@ -86,9 +86,9 @@ flutter:
     - assets/images/
 
 flutter_native_splash:
-  color: "#ffffff" 
-  image: assets/images/logo.png # Đường dẫn logo cho màn hình khởi động
-  android: true
+  color: "#ffffff" # Màu nền của màn hình khởi động
+  image: assets/images/logo.png # Đường dẫn tới hình ảnh logo
+  android_gravity: center # Canh giữa hình ảnh
 
   # To add assets to your application, add an assets section, like this:
   # assets:

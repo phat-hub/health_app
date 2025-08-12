@@ -230,23 +230,4 @@ class WaterService {
     }
     return true;
   }
-
-  Future<void> showTestNotification() async {
-    await _notifications.show(
-      999, // ID khác để không đè thông báo khác
-      '📢 Test nhắc nhở ngủ',
-      'Thông báo test này hiển thị ngay lập tức',
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'test_channel',
-          'Kênh Test',
-          importance: Importance.max,
-          priority: Priority.high,
-          visibility: NotificationVisibility.public,
-        ),
-      ),
-    );
-
-    debugPrint("🛑 Test notification đã gửi ngay lập tức");
-  }
 }
