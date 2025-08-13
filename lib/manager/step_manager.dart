@@ -75,8 +75,11 @@ class StepManager extends ChangeNotifier {
     int? healthSteps = await _service.getStepsForDate(date);
 
     if (healthSteps != null) {
+      // Có dữ liệu Health Connect
       hasHealthData = true;
+
       steps = healthSteps;
+
       _calculateMetrics();
       setLoading(false);
     } else {
@@ -85,27 +88,37 @@ class StepManager extends ChangeNotifier {
 
       if (_isToday(date)) {
         try {
-          // Listen pedometer realtime
-          _service.listenPedometer((pedometerSteps) async {
-            if (_stepCountAtStartOfDay == 0) {
-              await _saveStepCountAtStartOfDay(pedometerSteps);
-            }
+          // Lấy bước hiện tại từ pedometer
+          int pedometerSteps = await _service.getStepsFromPedometerToday();
 
-            steps = pedometerSteps - _stepCountAtStartOfDay;
-            if (steps < 0) steps = 0;
+          // Nếu chưa có offset đầu ngày thì lưu
+          if (_stepCountAtStartOfDay == 0) {
+            await _saveStepCountAtStartOfDay(pedometerSteps);
+          }
 
-            _calculateMetrics();
+          // Tính bước trong ngày
+          steps = pedometerSteps - _stepCountAtStartOfDay;
+          if (steps < 0) steps = 0;
+
+          // Ghi vào Health Connect ngay lập tức
+          await _service.writeStepsToHealthConnect(steps);
+
+          // Đọc lại từ Health Connect để đồng bộ
+          int? updatedSteps = await _service.getStepsForDate(date);
+          if (updatedSteps != null) {
+            steps = updatedSteps;
             hasHealthData = true;
-            notifyListeners();
+          } else {
+            // Nếu vẫn null thì dùng dữ liệu pedometer tạm thời
+            hasHealthData = true;
+          }
 
-            // Ghi vào Health Connect
-            await _service.writeStepsToHealthConnect(steps);
-          });
+          _calculateMetrics();
         } catch (e) {
           print("Error getting pedometer steps: $e");
           steps = 0;
-          setLoading(false);
         }
+        setLoading(false);
       } else {
         steps = 0;
         setLoading(false);
@@ -113,7 +126,6 @@ class StepManager extends ChangeNotifier {
     }
 
     selectedDate = date;
-    notifyListeners();
   }
 
   void updateGoal(int newGoal) async {
