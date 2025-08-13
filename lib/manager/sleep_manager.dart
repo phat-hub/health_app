@@ -37,11 +37,6 @@ class SleepManager extends ChangeNotifier {
     _reminder = reminder;
     await _service.setReminder(reminder);
 
-    // Gửi thông báo ngay lập tức khi bật nhắc nhở
-    if (reminder.enabled) {
-      await _service.showImmediateReminder();
-    }
-
     notifyListeners(); // cập nhật UI ngay
   }
 

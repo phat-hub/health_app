@@ -21,6 +21,7 @@ class SleepService {
 
   SleepService() {
     tz.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Asia/Ho_Chi_Minh'));
   }
 
   Future<SleepRecord?> getSleepDataForDate(DateTime date) async {
@@ -105,6 +106,8 @@ class SleepService {
         debugPrint("⚠ Quyền exact alarm chưa bật → cần bật rồi vào lại app.");
         return;
       }
+      await requestNotificationPermission();
+      await showTestNotification();
       await scheduleReminder(reminder);
     } else {
       await cancelReminder();
@@ -185,6 +188,20 @@ class SleepService {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const settings = InitializationSettings(android: android);
     await _notifications.initialize(settings);
+
+    // 🔹 Tạo channel cho Android 8+
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'sleep_channel_id', // phải trùng với khi schedule
+      'Sleep Reminders',
+      description: 'Nhắc bạn đi ngủ đúng giờ',
+      importance: Importance.max,
+    );
+
+    await _notifications
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+
     await requestNotificationPermission();
   }
 
@@ -276,25 +293,21 @@ class SleepService {
     return result;
   }
 
-  /// Gửi thông báo nhắc nhở đi ngủ ngay lập tức
-  Future<void> showImmediateReminder() async {
-    await _notifications.show(
-      9999, // ID duy nhất cho notification này
-      "Nhắc nhở đi ngủ",
-      "Đã đến giờ đi ngủ rồi!",
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'sleep_channel_id', // phải cùng channel ID với scheduleReminder
-          'Sleep Reminders',
-          channelDescription: 'Nhắc bạn đi ngủ đúng giờ',
-          importance: Importance.max,
-          priority: Priority.high,
-          playSound: true,
-          ticker: 'ticker',
-        ),
-      ),
+  Future<void> showTestNotification() async {
+    const androidDetails = AndroidNotificationDetails(
+      'sleep_channel_id',
+      'Sleep Reminders',
+      channelDescription: 'Nhắc bạn đi ngủ đúng giờ',
+      importance: Importance.max,
+      priority: Priority.high,
     );
+    const details = NotificationDetails(android: androidDetails);
 
-    debugPrint("⚡ Gửi nhắc nhở ngay lập tức");
+    await _notifications.show(
+      0,
+      'Test Notification',
+      'Nếu bạn thấy được thông báo này → hệ thống OK',
+      details,
+    );
   }
 }
