@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:image/image.dart' as img; // 📌 Thêm thư viện này
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
@@ -7,8 +8,7 @@ import '../screen.dart';
 
 class FoodScannerService {
   final ImagePicker _picker = ImagePicker();
-  final String apiKey =
-      "B03reu/w/8w01+lokcCZJA==fevOVyEeblbD04hR"; // CalorieNinjas API Key
+  final String serverBaseUrl = "https://health-server-t8bs.onrender.com";
 
   /// Xin quyền camera
   Future<bool> _requestCameraPermission() async {
@@ -36,28 +36,34 @@ class FoodScannerService {
     return null;
   }
 
-  /// Nhận diện thực phẩm bằng Google Cloud Vision API
+  /// Nhận diện thực phẩm qua server
+  /// Nhận diện thực phẩm qua server
   Future<String?> detectFoodName(File image) async {
-    final apiKey = "AIzaSyDM7IsYy0xPUJTQXuzQUDB7pN6rER4Wnb0";
-    final url = Uri.parse(
-        "https://vision.googleapis.com/v1/images:annotate?key=$apiKey");
+    final url = Uri.parse("$serverBaseUrl/detect-food");
 
-    // Đọc file ảnh và encode base64
-    final bytes = await image.readAsBytes();
-    final base64Image = base64Encode(bytes);
+    // Đọc ảnh gốc
+    final originalBytes = await image.readAsBytes();
+    final decodedImage = img.decodeImage(originalBytes);
 
-    // Request body
-    final body = jsonEncode({
-      "requests": [
-        {
-          "image": {"content": base64Image},
-          "features": [
-            {"type": "LABEL_DETECTION", "maxResults": 5}
-          ]
-        }
-      ]
-    });
+    if (decodedImage == null) {
+      throw Exception("Không đọc được ảnh");
+    }
 
+    // 📌 Chỉ resize nếu ảnh quá lớn (giữ chi tiết hơn)
+    final maxSize = 1280;
+    final resizedImage =
+        (decodedImage.width > maxSize || decodedImage.height > maxSize)
+            ? img.copyResize(decodedImage, width: maxSize)
+            : decodedImage;
+
+    // 📌 Giữ chất lượng cao hơn (90)
+    final resizedBytes = img.encodeJpg(resizedImage, quality: 90);
+
+    // Encode sang base64
+    final base64Image = base64Encode(resizedBytes);
+
+    // Gửi ảnh đã xử lý lên server
+    final body = jsonEncode({"imageBase64": base64Image});
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -72,7 +78,6 @@ class FoodScannerService {
             .map((label) => label["description"].toString().toLowerCase())
             .toList();
 
-        // Ưu tiên tên chi tiết
         final detailed = possibleLabels.firstWhere(
           (l) => l != "fruit" && l != "food" && l != "plant",
           orElse: () => possibleLabels.first,
@@ -82,19 +87,18 @@ class FoodScannerService {
       }
     } else {
       throw Exception(
-          "Lỗi Vision API: ${response.statusCode} - ${response.body}");
+          "Lỗi server detect-food: ${response.statusCode} - ${response.body}");
     }
 
     return null;
   }
 
-  /// Lấy calo từ CalorieNinjas API
+  /// Lấy calo từ server
   Future<FoodItem?> fetchCalories(String foodName) async {
-    final url =
-        Uri.parse("https://api.calorieninjas.com/v1/nutrition?query=$foodName");
-    final response = await http.get(url, headers: {
-      "X-Api-Key": apiKey,
-    });
+    final url = Uri.parse(
+        "$serverBaseUrl/calories?query=${Uri.encodeComponent(foodName)}");
+
+    final response = await http.get(url);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -105,6 +109,9 @@ class FoodScannerService {
           calories: (item["calories"] ?? 0).toDouble(),
         );
       }
+    } else {
+      throw Exception(
+          "Lỗi server calories: ${response.statusCode} - ${response.body}");
     }
     return null;
   }
