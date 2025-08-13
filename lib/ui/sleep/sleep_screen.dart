@@ -15,9 +15,11 @@ class _SleepScreenState extends State<SleepScreen> {
   @override
   void initState() {
     super.initState();
-    final manager = context.read<SleepManager>();
-    manager.init();
-    manager.loadSleepData(DateTime.now());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final manager = context.read<SleepManager>();
+      manager.init();
+      manager.loadSleepData(DateTime.now());
+    });
   }
 
   void _showReminderDialog(SleepManager manager) {
@@ -35,14 +37,17 @@ class _SleepScreenState extends State<SleepScreen> {
                 title: const Text("Bật nhắc nhở"),
                 value: tempReminder.enabled,
                 onChanged: (v) {
-                  setState(
-                      () => tempReminder = tempReminder.copyWith(enabled: v));
+                  setState(() {
+                    tempReminder = tempReminder.copyWith(enabled: v);
+                    manager.reminder = tempReminder; // cập nhật UI tạm thời
+                  });
                 },
               ),
               if (tempReminder.enabled)
                 ListTile(
                   title: Text(
-                      "Giờ nhắc: ${TimeOfDay(hour: tempReminder.hour, minute: tempReminder.minute).format(context)}"),
+                    "Giờ nhắc: ${TimeOfDay(hour: tempReminder.hour, minute: tempReminder.minute).format(context)}",
+                  ),
                   trailing: const Icon(Icons.access_time),
                   onTap: () async {
                     final picked = await showTimePicker(
@@ -51,8 +56,11 @@ class _SleepScreenState extends State<SleepScreen> {
                           hour: tempReminder.hour, minute: tempReminder.minute),
                     );
                     if (picked != null) {
-                      setState(() => tempReminder = tempReminder.copyWith(
-                          hour: picked.hour, minute: picked.minute));
+                      setState(() {
+                        tempReminder = tempReminder.copyWith(
+                            hour: picked.hour, minute: picked.minute);
+                        manager.reminder = tempReminder; // update UI tạm thời
+                      });
                     }
                   },
                 ),
@@ -66,8 +74,9 @@ class _SleepScreenState extends State<SleepScreen> {
             ElevatedButton(
               child: const Text("Lưu"),
               onPressed: () async {
-                await manager.toggleReminder(tempReminder);
                 Navigator.pop(context);
+                await manager
+                    .updateReminder(tempReminder); // lưu và đặt nhắc nhở
               },
             ),
           ],

@@ -75,11 +75,8 @@ class StepManager extends ChangeNotifier {
     int? healthSteps = await _service.getStepsForDate(date);
 
     if (healthSteps != null) {
-      // Có dữ liệu Health Connect
       hasHealthData = true;
-
       steps = healthSteps;
-
       _calculateMetrics();
       setLoading(false);
     } else {
@@ -88,30 +85,22 @@ class StepManager extends ChangeNotifier {
 
       if (_isToday(date)) {
         try {
-          // Lấy tổng bước realtime từ pedometer
-          int pedometerSteps = await _service.getStepsFromPedometerToday();
+          // Listen pedometer realtime
+          _service.listenPedometer((pedometerSteps) async {
+            if (_stepCountAtStartOfDay == 0) {
+              await _saveStepCountAtStartOfDay(pedometerSteps);
+            }
 
-          if (_stepCountAtStartOfDay == 0) {
-            // Lưu bước chân đầu ngày = pedometerSteps
-            await _saveStepCountAtStartOfDay(pedometerSteps);
-          }
+            steps = pedometerSteps - _stepCountAtStartOfDay;
+            if (steps < 0) steps = 0;
 
-          // Tính bước chân trong ngày
-          steps = pedometerSteps - _stepCountAtStartOfDay;
-          if (steps < 0) steps = 0;
+            _calculateMetrics();
+            hasHealthData = true;
+            notifyListeners();
 
-          // Ghi vào Health Connect
-          bool writeSuccess = await _service.writeStepsToHealthConnect(steps);
-
-          if (writeSuccess) {
-            // Đọc lại từ Health Connect cho đồng bộ
-            int? updatedSteps = await _service.getStepsForDate(date);
-            steps = updatedSteps ?? steps;
-          }
-
-          _calculateMetrics();
-          setLoading(false);
-          hasHealthData = true;
+            // Ghi vào Health Connect
+            await _service.writeStepsToHealthConnect(steps);
+          });
         } catch (e) {
           print("Error getting pedometer steps: $e");
           steps = 0;
@@ -124,6 +113,7 @@ class StepManager extends ChangeNotifier {
     }
 
     selectedDate = date;
+    notifyListeners();
   }
 
   void updateGoal(int newGoal) async {

@@ -116,9 +116,9 @@ class WaterManager extends ChangeNotifier {
 
   Future<void> addReminder(int hour, int minute) async {
     reminders.add(ReminderTime(hour: hour, minute: minute, enabled: true));
+    notifyListeners(); // update ngay
     await _service.saveReminders(reminders);
     await _service.scheduleAllReminders();
-    notifyListeners();
   }
 
   Future<void> removeReminder(int index) async {
@@ -130,9 +130,9 @@ class WaterManager extends ChangeNotifier {
 
   Future<void> toggleReminder(int index, bool enabled) async {
     reminders[index] = reminders[index].copyWith(enabled: enabled);
+    notifyListeners(); // update ngay
     await _service.saveReminders(reminders);
     await _service.scheduleAllReminders();
-    notifyListeners();
   }
 
   Future<void> initNotifications() async {

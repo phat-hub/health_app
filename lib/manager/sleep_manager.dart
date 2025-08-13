@@ -8,20 +8,41 @@ class SleepManager extends ChangeNotifier {
   bool isLoading = false;
   DateTime selectedDate = DateTime.now();
 
-  ReminderTime reminder = ReminderTime(hour: 22, minute: 0, enabled: false);
+  ReminderTime _reminder = ReminderTime(hour: 22, minute: 0, enabled: false);
 
   bool get hasData => sleepData != null && sleepData!.total.inMinutes > 0;
 
+  ReminderTime get reminder => _reminder;
+
+  set reminder(ReminderTime value) {
+    _reminder = value;
+    notifyListeners(); // cập nhật UI ngay khi thay đổi tạm thời
+  }
+
   Future<void> init() async {
     await _service.initNotifications();
-    reminder = await _service.getReminder() ?? reminder;
+    _reminder = await _service.getReminder() ??
+        ReminderTime(hour: 22, minute: 0, enabled: false);
+
+    if (_reminder.enabled) {
+      bool granted = await _service.requestExactAlarmPermission();
+      if (granted) {
+        await _service.scheduleReminder(_reminder);
+      }
+    }
     notifyListeners();
   }
 
-  Future<void> toggleReminder(ReminderTime newReminder) async {
-    reminder = newReminder;
-    await _service.setReminder(newReminder);
-    notifyListeners();
+  Future<void> updateReminder(ReminderTime reminder) async {
+    _reminder = reminder;
+    await _service.setReminder(reminder);
+
+    // Gửi thông báo ngay lập tức khi bật nhắc nhở
+    if (reminder.enabled) {
+      await _service.showImmediateReminder();
+    }
+
+    notifyListeners(); // cập nhật UI ngay
   }
 
   Future<void> loadSleepData(DateTime date) async {

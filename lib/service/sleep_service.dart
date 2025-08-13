@@ -19,6 +19,10 @@ class SleepService {
 
   static const _sleepReminderKey = 'sleepReminder';
 
+  SleepService() {
+    tz.initializeTimeZones();
+  }
+
   Future<SleepRecord?> getSleepDataForDate(DateTime date) async {
     await Permission.activityRecognition.request();
     await _health.configure();
@@ -82,14 +86,7 @@ class SleepService {
     );
   }
 
-  Future<void> initNotifications() async {
-    tz.initializeTimeZones();
-    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const settings = InitializationSettings(android: android);
-    await _notifications.initialize(settings);
-    await requestNotificationPermission();
-  }
-
+  /// Lấy reminder từ SharedPreferences
   Future<ReminderTime?> getReminder() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonStr = prefs.getString(_sleepReminderKey);
@@ -97,6 +94,7 @@ class SleepService {
     return ReminderTime.fromJson(json.decode(jsonStr));
   }
 
+  /// Lưu reminder và đặt/cancel thông báo
   Future<void> setReminder(ReminderTime reminder) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_sleepReminderKey, json.encode(reminder.toJson()));
@@ -104,7 +102,7 @@ class SleepService {
     if (reminder.enabled) {
       bool granted = await requestExactAlarmPermission();
       if (!granted) {
-        debugPrint("⚠ Quyền exact alarm chưa được bật → không thể đặt lịch.");
+        debugPrint("⚠ Quyền exact alarm chưa bật → cần bật rồi vào lại app.");
         return;
       }
       await scheduleReminder(reminder);
@@ -113,10 +111,10 @@ class SleepService {
     }
   }
 
+  /// Đặt thông báo nhắc nhở đi ngủ
   Future<void> scheduleReminder(ReminderTime reminder) async {
-    final now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduled = tz.TZDateTime(
-      tz.local,
+    final now = DateTime.now();
+    var scheduled = DateTime(
       now.year,
       now.month,
       now.day,
@@ -124,61 +122,77 @@ class SleepService {
       reminder.minute,
     );
 
+    // Nếu thời gian đã qua, cộng sang ngày hôm sau
     if (scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
 
     await _notifications.zonedSchedule(
       0,
-      'Đã tới giờ đi ngủ',
-      'Hãy chuẩn bị đi ngủ để có giấc ngủ ngon!',
-      scheduled,
+      "Nhắc nhở đi ngủ",
+      "Đã đến giờ đi ngủ rồi!",
+      tz.TZDateTime.from(scheduled, tz.local),
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'sleep_channel',
-          'Nhắc nhở đi ngủ',
-          channelDescription: 'Thông báo nhắc nhở giờ đi ngủ mỗi ngày',
+          'sleep_channel_id',
+          'Sleep Reminders',
+          channelDescription: 'Nhắc bạn đi ngủ đúng giờ',
           importance: Importance.max,
           priority: Priority.high,
-          visibility: NotificationVisibility.public,
+          playSound: true,
+          ticker: 'ticker',
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
+      androidAllowWhileIdle: true, // chạy khi device idle
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time, // lặp lại hàng ngày
     );
+
+    debugPrint("✅ Đã đặt nhắc nhở lúc: $scheduled");
   }
 
+  /// Hủy tất cả thông báo nhắc nhở
   Future<void> cancelReminder() async {
     await _notifications.cancelAll();
   }
 
+  /// Yêu cầu quyền exact alarm trên Android 12+
+  Future<bool> requestExactAlarmPermission() async {
+    if (!Platform.isAndroid) return true;
+
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    if (androidInfo.version.sdkInt < 31) return true;
+
+    if (await Permission.scheduleExactAlarm.isGranted) return true;
+
+    try {
+      final intent = AndroidIntent(
+        action: 'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
+      );
+      await intent.launch();
+      // Chờ vài giây và check lại quyền
+      await Future.delayed(const Duration(seconds: 2));
+      return await Permission.scheduleExactAlarm.isGranted;
+    } catch (e) {
+      debugPrint("Không thể mở trang quyền exact alarm: $e");
+      return false;
+    }
+  }
+
+  /// Khởi tạo notification plugin
+  Future<void> initNotifications() async {
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const settings = InitializationSettings(android: android);
+    await _notifications.initialize(settings);
+    await requestNotificationPermission();
+  }
+
+  /// Yêu cầu quyền thông báo
   Future<void> requestNotificationPermission() async {
     if (await Permission.notification.isDenied) {
       await Permission.notification.request();
     }
-  }
-
-  Future<bool> requestExactAlarmPermission() async {
-    if (Platform.isAndroid) {
-      final androidInfo = await DeviceInfoPlugin().androidInfo;
-      if (androidInfo.version.sdkInt >= 31) {
-        if (!await Permission.scheduleExactAlarm.isGranted) {
-          try {
-            final intent = AndroidIntent(
-              action: 'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
-              package: 'com.example.health_app',
-            );
-            await intent.launch();
-          } catch (e) {
-            debugPrint("Không thể mở trang quyền exact alarm: $e");
-          }
-          return false;
-        }
-      }
-    }
-    return true;
   }
 
   Future<Map<DateTime, SleepRecord>> getSleepDataInRange(
@@ -260,5 +274,27 @@ class SleepService {
     }
 
     return result;
+  }
+
+  /// Gửi thông báo nhắc nhở đi ngủ ngay lập tức
+  Future<void> showImmediateReminder() async {
+    await _notifications.show(
+      9999, // ID duy nhất cho notification này
+      "Nhắc nhở đi ngủ",
+      "Đã đến giờ đi ngủ rồi!",
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'sleep_channel_id', // phải cùng channel ID với scheduleReminder
+          'Sleep Reminders',
+          channelDescription: 'Nhắc bạn đi ngủ đúng giờ',
+          importance: Importance.max,
+          priority: Priority.high,
+          playSound: true,
+          ticker: 'ticker',
+        ),
+      ),
+    );
+
+    debugPrint("⚡ Gửi nhắc nhở ngay lập tức");
   }
 }
