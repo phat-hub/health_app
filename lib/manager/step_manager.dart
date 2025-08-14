@@ -19,11 +19,11 @@ class StepManager extends ChangeNotifier {
 
   List<StepRecord> stepRecords = [];
 
-  int _stepCountAtStartOfDay = 0; // offset bước chân đầu ngày để reset 0h
+  int _stepOffset = 0; // offset reset 0h
 
   StepManager() {
     _loadGoalFromPrefs();
-    _loadStepCountAtStartOfDay();
+    _loadStepOffset();
   }
 
   bool get isLoading => _isLoading;
@@ -33,18 +33,17 @@ class StepManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _loadStepCountAtStartOfDay() async {
+  Future<void> _loadStepOffset() async {
     final prefs = await SharedPreferences.getInstance();
     final todayKey = _dateToString(DateTime.now());
-    _stepCountAtStartOfDay =
-        prefs.getInt('stepCountAtStartOfDay_$todayKey') ?? 0;
+    _stepOffset = prefs.getInt('stepOffset_$todayKey') ?? 0;
   }
 
-  Future<void> _saveStepCountAtStartOfDay(int stepCount) async {
+  Future<void> _saveStepOffset(int offset) async {
     final prefs = await SharedPreferences.getInstance();
     final todayKey = _dateToString(DateTime.now());
-    await prefs.setInt('stepCountAtStartOfDay_$todayKey', stepCount);
-    _stepCountAtStartOfDay = stepCount;
+    await prefs.setInt('stepOffset_$todayKey', offset);
+    _stepOffset = offset;
   }
 
   Future<void> initSteps() async {
@@ -72,60 +71,43 @@ class StepManager extends ChangeNotifier {
   Future<void> loadStepsForDate(DateTime date) async {
     setLoading(true);
 
+    final prefs = await SharedPreferences.getInstance();
+    final todayKey = _dateToString(DateTime.now());
+    int? savedOffset = prefs.getInt('stepOffset_$todayKey');
+
+    int pedometerSteps = 0;
+
+    if (_isToday(date)) {
+      pedometerSteps = await _service.getStepsFromPedometerNow();
+
+      // Nếu offset chưa lưu cho ngày mới hoặc ngày đã thay đổi → reset
+      if (savedOffset == null) {
+        await _saveStepOffset(pedometerSteps);
+      }
+    }
+
     int? healthSteps = await _service.getStepsForDate(date);
 
     if (healthSteps != null) {
-      // Có dữ liệu Health Connect
       hasHealthData = true;
-
       steps = healthSteps;
-
-      _calculateMetrics();
-      setLoading(false);
     } else {
-      // Không có dữ liệu Health Connect
-      hasHealthData = false;
-
       if (_isToday(date)) {
-        try {
-          // Lấy bước hiện tại từ pedometer
-          int pedometerSteps = await _service.getStepsFromPedometerToday();
+        steps = pedometerSteps - _stepOffset;
+        if (steps < 0) steps = 0;
 
-          // Nếu chưa có offset đầu ngày thì lưu
-          if (_stepCountAtStartOfDay == 0) {
-            await _saveStepCountAtStartOfDay(pedometerSteps);
-          }
-
-          // Tính bước trong ngày
-          steps = pedometerSteps - _stepCountAtStartOfDay;
-          if (steps < 0) steps = 0;
-
-          // Ghi vào Health Connect ngay lập tức
-          await _service.writeStepsToHealthConnect(steps);
-
-          // Đọc lại từ Health Connect để đồng bộ
-          int? updatedSteps = await _service.getStepsForDate(date);
-          if (updatedSteps != null) {
-            steps = updatedSteps;
-            hasHealthData = true;
-          } else {
-            // Nếu vẫn null thì dùng dữ liệu pedometer tạm thời
-            hasHealthData = true;
-          }
-
-          _calculateMetrics();
-        } catch (e) {
-          print("Error getting pedometer steps: $e");
-          steps = 0;
-        }
-        setLoading(false);
+        // Ghi lại Health Connect
+        await _service.writeStepsToHealthConnect(steps);
+        hasHealthData = true;
       } else {
         steps = 0;
-        setLoading(false);
       }
     }
 
     selectedDate = date;
+    setLoading(false);
+    _calculateMetrics();
+    notifyListeners();
   }
 
   void updateGoal(int newGoal) async {
@@ -161,6 +143,7 @@ class StepManager extends ChangeNotifier {
   @override
   void dispose() {
     _pollingTimer?.cancel();
+    _service.stopPedometer();
     super.dispose();
   }
 }

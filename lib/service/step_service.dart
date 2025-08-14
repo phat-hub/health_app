@@ -68,25 +68,15 @@ class StepService {
     );
   }
 
-  /// Lấy tổng số bước realtime từ cảm biến pedometer trong ngày hiện tại
-  Future<int> getStepsFromPedometerToday() async {
-    // Đây là cách lấy tổng bước hiện tại từ pedometer realtime
+  Future<int> getStepsFromPedometerNow() async {
     Completer<int> completer = Completer<int>();
-    int lastStepCount = 0;
 
     _pedometerSubscription = Pedometer.stepCountStream.listen(
       (StepCount event) {
-        // Pedometer trả về tổng bước từ lúc thiết bị khởi động
-        lastStepCount = event.steps;
-        if (!completer.isCompleted) {
-          completer.complete(lastStepCount);
-        }
+        if (!completer.isCompleted) completer.complete(event.steps);
       },
       onError: (error) {
-        print("Pedometer error: $error");
-        if (!completer.isCompleted) {
-          completer.completeError(error);
-        }
+        if (!completer.isCompleted) completer.completeError(error);
       },
       cancelOnError: false,
     );
@@ -94,21 +84,7 @@ class StepService {
     return completer.future;
   }
 
-  void listenPedometer(Function(int) onStepChanged) {
-    _pedometerSubscription = Pedometer.stepCountStream.listen(
-      (StepCount event) {
-        onStepChanged(event.steps);
-      },
-      onError: (error) {
-        print("Pedometer error: $error");
-      },
-      cancelOnError: false,
-    );
-  }
-
-  void stopPedometer() {
-    _pedometerSubscription?.cancel();
-  }
+  void stopPedometer() => _pedometerSubscription?.cancel();
 
   Future<List<StepRecord>> getStepRecordsLast30Days() async {
     final List<StepRecord> records = [];
