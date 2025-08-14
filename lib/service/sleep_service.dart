@@ -107,7 +107,6 @@ class SleepService {
         return;
       }
       await requestNotificationPermission();
-      await showTestNotification();
       await scheduleReminder(reminder);
     } else {
       await cancelReminder();
@@ -207,9 +206,10 @@ class SleepService {
 
   /// Yêu cầu quyền thông báo
   Future<void> requestNotificationPermission() async {
-    if (await Permission.notification.isDenied) {
-      await Permission.notification.request();
-    }
+    _notifications
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
   }
 
   Future<Map<DateTime, SleepRecord>> getSleepDataInRange(
@@ -291,23 +291,5 @@ class SleepService {
     }
 
     return result;
-  }
-
-  Future<void> showTestNotification() async {
-    const androidDetails = AndroidNotificationDetails(
-      'sleep_channel_id',
-      'Sleep Reminders',
-      channelDescription: 'Nhắc bạn đi ngủ đúng giờ',
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-    const details = NotificationDetails(android: androidDetails);
-
-    await _notifications.show(
-      0,
-      'Test Notification',
-      'Nếu bạn thấy được thông báo này → hệ thống OK',
-      details,
-    );
   }
 }

@@ -1,4 +1,3 @@
-export 'service/auth_service.dart';
 export 'service/heart_rate_camera_service.dart';
 export 'service/heart_rate_service.dart';
 export 'service/step_service.dart';
@@ -23,7 +22,6 @@ export 'model/water_record.dart';
 export 'model/food_item.dart';
 
 export 'manager/heart_rate_manager.dart';
-export 'manager/auth_manager.dart';
 export 'manager/theme_manager.dart';
 export 'manager/heart_rate_camera_manager.dart';
 export 'manager/step_manager.dart';
@@ -35,7 +33,6 @@ export 'manager/bmi_manager.dart';
 export 'manager/chat_manager.dart';
 export 'manager/food_scanner_manager.dart';
 
-export 'ui/login_screen.dart';
 export 'ui/heart_rate/heart_rate_history_screen.dart';
 export 'ui/heart_rate/heart_rate_camera_screen.dart';
 export 'ui/heart_rate/heart_rate_info_screen.dart';

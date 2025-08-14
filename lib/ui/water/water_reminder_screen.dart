@@ -94,7 +94,21 @@ class _WaterReminderScreenState extends State<WaterReminderScreen> {
             initialTime: now,
           );
           if (picked != null) {
-            manager.addReminder(picked.hour, picked.minute);
+            final success =
+                await manager.addReminder(picked.hour, picked.minute);
+            if (!success) {
+              // Thông báo nhắc nhở trùng
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    "Nhắc nhở giờ này đã tồn tại!",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  duration: Duration(seconds: 2),
+                  backgroundColor: Colors.blue,
+                ),
+              );
+            }
           }
         },
         child: const Icon(Icons.add),

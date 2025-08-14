@@ -12,7 +12,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
-        coreLibraryDesugaringEnabled true  // Bật desugaring
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
@@ -22,15 +22,32 @@ android {
     defaultConfig {
         applicationId = "com.example.health_app"
         minSdk = 26
-        targetSdk = 35 
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
-    buildTypes {
+    // =======================
+    // Signing config cho release
+    // =======================
+    signingConfigs {
         release {
-            signingConfig = signingConfigs.debug
-            minifyEnabled true
+            keyAlias 'your-key-alias'           
+            keyPassword 'Phat@123' 
+            storeFile file('your-keystore.jks') 
+            storePassword 'Phat@123'          
+        }
+    }
+
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug         // debug vẫn dùng keystore debug mặc định
+        }
+        release {
+            signingConfig signingConfigs.release       // release dùng keystore release
+            minifyEnabled true                         // bật ProGuard rút gọn code
+            shrinkResources true                       // loại bỏ resource không dùng
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -42,12 +59,8 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-
     implementation "androidx.window:window-java:1.0.0"
 
-    // Thêm dòng này để hỗ trợ Java 8 API
+    // Hỗ trợ Java 8 API
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }
-
-
-apply plugin: 'com.google.gms.google-services'

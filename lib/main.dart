@@ -22,7 +22,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthManager()),
         ChangeNotifierProvider(create: (_) => ThemeManager()),
         ChangeNotifierProvider(create: (_) => HeartRateManager()),
         ChangeNotifierProvider(create: (_) => HeartRateCameraManager()),
@@ -45,7 +44,6 @@ class MyApp extends StatelessWidget {
             themeMode: themeManager.themeMode,
             initialRoute: '/home',
             routes: {
-              '/login': (context) => const LoginScreen(),
               '/home': (context) => const HealthHomePage(),
               '/heartRateHistory': (context) => const HeartRateHistoryScreen(),
               '/heartRateCamera': (context) => const HeartRateCameraScreen(),

@@ -13,3 +13,11 @@
 -dontwarn androidx.window.sidecar.SidecarInterface
 -dontwarn androidx.window.sidecar.SidecarProvider
 -dontwarn androidx.window.sidecar.SidecarWindowLayoutInfo
+# Giữ các class của FlutterLocalNotifications
+-keep class com.dexterous.flutterlocalnotifications.** { *; }
+
+# Giữ các class TypeToken và Gson generic info
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keepattributes Signature
+
+

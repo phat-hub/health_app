@@ -137,6 +137,7 @@ class WaterService {
 
   Future<void> initNotifications() async {
     tz.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Asia/Ho_Chi_Minh'));
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const settings = InitializationSettings(android: android);
     await _notifications.initialize(settings);
@@ -170,12 +171,20 @@ class WaterService {
     for (int i = 0; i < reminders.length; i++) {
       final r = reminders[i];
       if (r.enabled) {
-        await _scheduleReminder(r, i);
+        await scheduleReminder(r, i);
       }
     }
   }
 
-  Future<void> _scheduleReminder(ReminderTime reminder, int id) async {
+  Future<void> cancelReminderById(int id) async {
+    await _notifications.cancel(id);
+  }
+
+  Future<void> cancelAllReminders() async {
+    await _notifications.cancelAll();
+  }
+
+  Future<void> scheduleReminder(ReminderTime reminder, int id) async {
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(
       tz.local,
@@ -185,14 +194,16 @@ class WaterService {
       reminder.hour,
       reminder.minute,
     );
+
+    // Nếu thời gian đã qua, cộng sang ngày hôm sau
     if (scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
 
     await _notifications.zonedSchedule(
       id,
-      '💧 Uống nước ngay nào!',
-      'Đã đến giờ uống nước để giữ sức khỏe 💙',
+      "💧 Uống nước ngay nào!",
+      "Đã đến giờ uống nước để giữ sức khỏe 💙",
       scheduled,
       const NotificationDetails(
         android: AndroidNotificationDetails(
@@ -203,11 +214,13 @@ class WaterService {
           priority: Priority.high,
         ),
       ),
+      androidAllowWhileIdle: true,
       matchDateTimeComponents: DateTimeComponents.time,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
+
+    debugPrint("✅ Đặt nhắc nhở nước: ${reminder.hour}:${reminder.minute}");
   }
 
   Future<bool> requestExactAlarmPermission() async {

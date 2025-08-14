@@ -114,25 +114,39 @@ class WaterManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addReminder(int hour, int minute) async {
-    reminders.add(ReminderTime(hour: hour, minute: minute, enabled: true));
-    notifyListeners(); // update ngay
+  Future<bool> addReminder(int hour, int minute) async {
+    // Kiểm tra trùng giờ/phút
+    final exists = reminders.any((r) => r.hour == hour && r.minute == minute);
+    if (exists) return false;
+
+    final newReminder = ReminderTime(hour: hour, minute: minute, enabled: true);
+    reminders.add(newReminder);
+    notifyListeners();
+
     await _service.saveReminders(reminders);
-    await _service.scheduleAllReminders();
+    await _service.scheduleReminder(
+        newReminder, reminders.indexOf(newReminder));
+    return true;
   }
 
   Future<void> removeReminder(int index) async {
+    await _service.cancelReminderById(index);
     reminders.removeAt(index);
-    await _service.saveReminders(reminders);
-    await _service.scheduleAllReminders();
     notifyListeners();
+
+    await _service.saveReminders(reminders);
   }
 
   Future<void> toggleReminder(int index, bool enabled) async {
     reminders[index] = reminders[index].copyWith(enabled: enabled);
-    notifyListeners(); // update ngay
+    notifyListeners();
+
     await _service.saveReminders(reminders);
-    await _service.scheduleAllReminders();
+    if (enabled) {
+      await _service.scheduleReminder(reminders[index], index);
+    } else {
+      await _service.cancelReminderById(index);
+    }
   }
 
   Future<void> initNotifications() async {
